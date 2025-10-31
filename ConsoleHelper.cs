@@ -17,9 +17,9 @@ namespace ConsoleRenderer {
         [DllImport("kernel32")]
         public static extern bool SetConsoleIcon (IntPtr hIcon);
 
-        public static bool SetConsoleIcon (Icon icon) {
-            return SetConsoleIcon(icon.Handle);
-        }
+        //public static bool SetConsoleIcon (Icon icon) {
+        //    return SetConsoleIcon(icon.Handle);
+        //}
 
         [DllImport("kernel32")]
         private extern static bool SetConsoleFont (IntPtr hOutput, uint index);

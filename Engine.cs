@@ -75,7 +75,7 @@ namespace ConsoleRenderer {
         public bool isPassing;
         public bool isSelfEnd;
 
-        public int fpsMax = 60;
+        public double fpsMax = 60;
 
 
 

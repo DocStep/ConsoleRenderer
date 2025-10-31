@@ -1,12 +1,4 @@
-﻿using NAudio.Utils;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 
 
 enum KeyState {

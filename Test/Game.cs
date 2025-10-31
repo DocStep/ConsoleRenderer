@@ -2,23 +2,6 @@
 using System.Diagnostics;
 using System.Drawing;
 using ConsoleRenderer;
-<<<<<<< Updated upstream:Test/Game.cs
-//using MediaToolkit;
-
-
-namespace Test {
-    class Game : ConsoleGame {
-        static void Main (string[] args) {
-            //Console.WriteLine("video");
-            game = new Game();
-            game.engine.EngineStart(game.Start, game.Update, null, null);
-        }
-        static Game game;
-
-        new Engine engine;
-        new Renderer renderer;
-        //new Renderer renderer;
-=======
 
 
 namespace Test {
@@ -34,10 +17,8 @@ namespace Test {
         }
         static MyGame game;
         
-        //new Engine engine;
->>>>>>> Stashed changes:Test/MyGame.cs
 
-        public Game () {
+        public MyGame () {
             //Console.ReadKey();        
             //Console.WriteLine("video");
 
@@ -65,22 +46,16 @@ namespace Test {
                 });*/
             //renderer = game.engine.renderer;
 
-<<<<<<< Updated upstream:Test/Game.cs
-            engine = CreateGame(60, 30, new Dictionary<int, ConsoleColor>() {
-=======
+
             /*engine = CreateGame(60, 30, new Dictionary<int, ConsoleColor>() {
->>>>>>> Stashed changes:Test/MyGame.cs
                     { -1, ConsoleColor.DarkGray },
                     { 0, ConsoleColor.Black },
                     { 1, ConsoleColor.Cyan },
                     { 2, ConsoleColor.Magenta },
                     { 3, ConsoleColor.Green },
                     { 4, ConsoleColor.DarkYellow },
-<<<<<<< Updated upstream:Test/Game.cs
-                });
-=======
+
                 });*/
->>>>>>> Stashed changes:Test/MyGame.cs
             //renderer = engine.renderer;
 
         }
@@ -90,11 +65,7 @@ namespace Test {
         Random r = new Random();
         AlgBML alg = new AlgBML();
         //AlgCircle alg = new AlgCircle();
-<<<<<<< Updated upstream:Test/Game.cs
-        AlgRectangle alg = new AlgRectangle();
-=======
         //AlgRectangle alg = new AlgRectangle();
->>>>>>> Stashed changes:Test/MyGame.cs
         public override void Start () {
             renderer = engine.renderer;
             engine.fpsMax = 1000;

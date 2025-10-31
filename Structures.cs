@@ -14,9 +14,9 @@ namespace ConsoleRenderer {
             B = b;
         }
 
-        byte R;
-        byte G;
-        byte B;
+        public byte R;
+        public byte G;
+        public byte B;
         
         public static Pixel black = new Pixel(0, 0, 0);
         public static Pixel white = new Pixel(255, 255, 255);

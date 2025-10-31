@@ -130,7 +130,7 @@ namespace ConsoleRenderer {
 
         int currloadingChar = 0;
         void ProcessLoadingSymbol () {
-            int frameDelta = engine.fpsMax/loading.Length/2;
+            int frameDelta = (int)(engine.fpsMax/loading.Length/2);
             if (iter % frameDelta == 0) currloadingChar++;
             engine.renderer.Write(loading[currloadingChar % loading.Length].ToString(), menuActive.selected+2, 2, 0, 1, false);
         }

@@ -30,14 +30,10 @@ namespace ConsoleRenderer {
             this.height = height;
             this.width = width;
 
-            //SetCursor(height-1, width-1);
-            //Console.SetWindowSize(width, height);
-            //SetColorText(colorText);
-            //SetColorCell(colorCell);
-
             arrText = new char[height, width];
             arrTextColor = new int[height, width];
             arrCellColor = new int[height, width];
+            pixels = new Pixel[height, width];
             pixelsGs = new float[height, width/2];
 
             arrText = Simple.ArrayFill(arrText, ' ');
@@ -49,50 +45,17 @@ namespace ConsoleRenderer {
             bufferTextColor = new int[height, width];
             bufferCellColor = new int[height, width];
 
-            this.colors = colors;
-
+            InitCanvas(height, width);
             EmptyCanvas(height, width);
         }
-
-        public Renderer (int width, int height) {
-            debugger = new RendererDebugger(this);
-
-            this.width = width;
-            this.height = height;
-            Console.CursorVisible = false;
-            Console.SetCursorPosition(0, 0);
-            Console.SetWindowSize(width, height);
-            Console.SetBufferSize(width, height);
-            Console.SetWindowSize(width, height);
-
-            arrText = new char[height, width];
-            arrTextColor = new int[height, width];
-            arrCellColor = new int[height, width];
-            pixelsGs = new float[height, width/2];
-
-            arrText = Simple.ArrayFill(arrText, ' ');
-            arrTextColor = Simple.ArrayFill(arrTextColor, colors.ElementAt(0).Key);
-            arrCellColor = Simple.ArrayFill(arrCellColor, colors.ElementAt(0).Key);
-            //videoCellsGs = Simple.ArrayFill(videoCellsGs, 0);
-
-            bufferText = new char[arrText.GetLength(0), arrText.GetLength(1)];
-            bufferTextColor = new int[arrTextColor.GetLength(0), arrTextColor.GetLength(1)];
-            bufferCellColor = new int[arrCellColor.GetLength(0), arrCellColor.GetLength(1)];
-
-            colors = DefaultValues.colorsBW;
-
-            EmptyCanvas(height, width);
-        }
-
 
         void InitCanvas (int height, int width) {
-            
-        }
-        void EmptyCanvas (int height, int width) {
             Console.CursorVisible = false;
             Console.SetWindowSize(width, height);
             Console.SetBufferSize(width, height);
             Console.SetWindowSize(width, height);
+        }
+        void EmptyCanvas (int height, int width) {
             Console.SetCursorPosition(0, 0);
             Console.ForegroundColor = DefaultValues.text;
             Console.BackgroundColor = DefaultValues.cell;
@@ -166,7 +129,7 @@ namespace ConsoleRenderer {
 
 
 
-        public Color[,] pixels;
+        public Pixel[,] pixels;
         public float[,] pixelsGs;
         public float blurPower = 0;
         void FramePixels (Pixel[,] frame) {
@@ -185,7 +148,7 @@ namespace ConsoleRenderer {
             //image = new Bitmap(image, new Size(width/2, height)); // Resize to fit console window
             FramePixels(frame);
 
-            if (blurPower > 0) FrameBlur(image, 0.1f);
+            //if (0 < blurPower) FrameBlur(frame, 0.1f);
 
             for (int top = 0; top < height; top++) {
                 for (int left = 0; left < width/2; left++) {
@@ -204,27 +167,27 @@ namespace ConsoleRenderer {
         public void VideoToAscii (Pixel[,] frame) {
             FramePixels(frame);
 
-            if (blurPower > 0) FrameBlur(image, blurPower);
+            if (blurPower > 0) FrameBlur(frame, blurPower);
 
             textAscii = "";
-            for (int top = 0; top < image.Height; top++) {
-                for (int left = 0; left < image.Width; left++) {
+            for (int top = 0; top < height; top++) {
+                for (int left = 0; left < width; left++) {
                     int idx = (int)(pixelsGs[top, left]*colors.Count);
                     textAscii += asciiChars[asciiChars.Length-1-(int)(pixelsGs[top, left]*asciiChars.Length)];
                 }
             }
         }
 
-        void FrameBlur (Bitmap image, float power) {
+        void FrameBlur (Pixel[,] frame, float power) {
             //float power = 0.5f;
-            for (int top = 0; top < image.Height; top++) {
-                for (int left = 0; left < image.Width; left++) {
+            for (int top = 0; top < height; top++) {
+                for (int left = 0; left < width; left++) {
                     float sum = pixelsGs[top, left] - pixelsGs[top, left]*power;
                     float dev = 1 - power;
                     for (int itop = -1; itop <= 1; itop++) {
                         for (int ileft = -1; ileft <= 1; ileft++) {
-                            if (0 <= top+itop && top+itop < image.Height &&
-                                0 <= left+ileft && left+ileft < image.Width) {
+                            if (0 <= top+itop && top+itop < height &&
+                                0 <= left+ileft && left+ileft < width) {
                                 sum += pixelsGs[top+itop, left+ileft]*power;
                                 dev += power;
                             }
