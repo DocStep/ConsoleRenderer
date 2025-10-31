@@ -7,8 +7,8 @@ namespace ConsoleRenderer {
     public abstract class ConsoleGame {
 
         public Engine engine;
-        //public Renderer renderer;
-        //public RendererDebugger debugger;
+        public Renderer renderer;
+        public RendererDebugger debugger;
 
 
         public Engine Menu () {
@@ -42,7 +42,7 @@ namespace ConsoleRenderer {
 
         /// <summary> First frame. </summary>
         public abstract void Start ();
-        
+
         /// <summary> Update frame. </summary>
         public abstract void Update ();
 

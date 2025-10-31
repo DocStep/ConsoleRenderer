@@ -1,5 +1,4 @@
-﻿using MediaToolkit;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Diagnostics;
@@ -31,8 +30,8 @@ namespace ConsoleRenderer {
         public Game game;
 
         public delegate void Void ();
-        public Void dStart;
-        public Void dUpdate;
+        public Void de_Start;
+        public Void de_Update;
         public Void Start;
         public Void Update;
         public Void UpdateSkip;
@@ -41,8 +40,8 @@ namespace ConsoleRenderer {
 
         public Engine (ConsoleGame game) {
             consoleGame = game;
-            dStart += game.Start;
-            dUpdate += game.Update;
+            de_Start += game.Start;
+            de_Update += game.Update;
             input = new Input();
             threadsStartCount = Process.GetCurrentProcess().Threads.Count;
         }
@@ -87,7 +86,7 @@ namespace ConsoleRenderer {
             if (Start != null) {
                 isPassing = true;
                 Start();
-                if (state == States.game) dStart();
+                if (state == States.game) de_Start.Invoke();
 
                 renderer.Pass();
                 isPassing = false;
@@ -110,8 +109,8 @@ namespace ConsoleRenderer {
                     // Frame
                     framesQueue--;
 
-                    if (Update != null) Update();
-                    if (state == States.game) dUpdate();
+                    if (Update != null) Update?.Invoke();
+                    if (state == States.game) de_Update?.Invoke();
 
                     renderer.debugger.framesQueue = framesQueue;
                     renderer.Pass();
@@ -188,7 +187,7 @@ namespace ConsoleRenderer {
             game = new Game(this, width, height, colors);
             renderer = game.engine.renderer;
 
-            //EngineStart(game.Start, game.Update, game.UpdateSkip, game.Exit);
+            EngineStart(game.Start, game.Update, game.UpdateSkip, game.Exit);
         }
 
 

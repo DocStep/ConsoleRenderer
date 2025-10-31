@@ -15,11 +15,20 @@ namespace ConsoleRenderer {
 
         public RendererDebugger debugger;
 
-        public Renderer (int width, int height, Dictionary<int, ConsoleColor> colors) {
+        public Renderer (int height, int width, Dictionary<int, ConsoleColor> colors) {
+            this.colors = colors;
+            Init(height, width);
+        }
+        public Renderer (int height, int width) {
+            colors = DefaultValues.colorsBW;
+            Init(width, height);
+        }
+
+        void Init (int height, int width) {
             debugger = new RendererDebugger(this);
 
-            this.width = width;
             this.height = height;
+            this.width = width;
 
             //SetCursor(height-1, width-1);
             //Console.SetWindowSize(width, height);
@@ -36,9 +45,9 @@ namespace ConsoleRenderer {
             arrCellColor = Simple.ArrayFill(arrCellColor, colors.ElementAt(0).Key);
             //videoCellsGs = Simple.ArrayFill(videoCellsGs, 0);
 
-            bufferText = new char[arrText.GetLength(0), arrText.GetLength(1)];
-            bufferTextColor = new int[arrTextColor.GetLength(0), arrTextColor.GetLength(1)];
-            bufferCellColor = new int[arrCellColor.GetLength(0), arrCellColor.GetLength(1)];
+            bufferText = new char[height, width];
+            bufferTextColor = new int[height, width];
+            bufferCellColor = new int[height, width];
 
             this.colors = colors;
 
@@ -160,26 +169,26 @@ namespace ConsoleRenderer {
         public Color[,] pixels;
         public float[,] pixelsGs;
         public float blurPower = 0;
-        void GetPixels (Bitmap image) {
-            pixels = new Color[image.Height, image.Width];
-            pixelsGs = new float[image.Height, image.Width];
-            for (int top = 0; top < image.Height; top++) {
-                for (int left = 0; left < image.Width; left++) {
-                    pixels[top, left] = image.GetPixel(left, top);
-                    pixelsGs[top, left] = ((pixels[top, left].R * 0.3f) + (pixels[top, left].G * 0.59f) + (pixels[top, left].B * 0.11f))/256f;
+        void FramePixels (Pixel[,] frame) {
+            //pixels = new Pixel[height, width];
+            //pixelsGs = new float[height, width];
+            for (int top = 0; top < height; top++) {
+                for (int left = 0; left < width/2; left++) {
+                    Pixel pixel = frame[top, left];
+                    pixels[top, left] = pixel;
+                    pixelsGs[top, left] = ((pixel.R*0.3f) + (pixel.G*0.59f) + (pixel.B*0.11f))/256f;
                 }
             }
         }
 
-
-        public void VideoToArrays (Bitmap image) {
-            image = new Bitmap(image, new Size(width/2, height)); // Resize to fit console window
-            GetPixels(image);
+        public void VideoToArrays (Pixel[,] frame) {
+            //image = new Bitmap(image, new Size(width/2, height)); // Resize to fit console window
+            FramePixels(frame);
 
             if (blurPower > 0) FrameBlur(image, 0.1f);
 
-            for (int top = 0; top < image.Height; top++) {
-                for (int left = 0; left < image.Width; left++) {
+            for (int top = 0; top < height; top++) {
+                for (int left = 0; left < width/2; left++) {
                     int idx = (int)(pixelsGs[top, left]*colors.Count);
                     arrCellColor[top, 2*left] = colors.ElementAt(idx).Key;
                     arrCellColor[top, 2*left+1] = colors.ElementAt(idx).Key;
@@ -192,9 +201,8 @@ namespace ConsoleRenderer {
                 }
             }
         }
-        public void VideoToAscii (Bitmap image) {
-            image = new Bitmap(image, new Size(width, height)); // Resize to fit console window
-            GetPixels(image);
+        public void VideoToAscii (Pixel[,] frame) {
+            FramePixels(frame);
 
             if (blurPower > 0) FrameBlur(image, blurPower);
 
@@ -403,10 +411,16 @@ namespace ConsoleRenderer {
                                 groupsToWriteOver[iColor].colorCell == arrCellColor[top, left]) {
                                 groupFounded = true;
                                 if (prevSymbolWritenToGroupIndex == iColor) {
+                                    //char c = arrText[top, left];
+                                    //var v1 = groupsToWriteOver[iColor];
+                                    //var v2 = v1.pos;
+                                    //var v3 = v2[groupsToWriteOver[iColor].pos.Count-1];
+                                    //var v4 = v3.text;
+                                    //if (v3.text) 
                                     groupsToWriteOver[iColor].pos[groupsToWriteOver[iColor].pos.Count-1].text
-                                        += $"{arrText[top, left], 1}";
+                                        += text(top, left);
                                 } else {
-                                    groupsToWriteOver[iColor].pos.Add(new Pos($"{arrText[top, left], 1}", top, left));
+                                    groupsToWriteOver[iColor].pos.Add(new Pos(text(top, left), top, left));
                                 }
                                 prevSymbolWritenToGroupIndex = iColor;
                                 break;
@@ -417,13 +431,22 @@ namespace ConsoleRenderer {
                         if (!groupFounded) {
                             prevSymbolWritenToGroupIndex = groupsToWriteOver.Count;
                             groupsToWriteOver.Add(new(arrTextColor[top, left], arrCellColor[top, left],
-                                new Pos($"{arrText[top, left], 1}", top, left)));
+                                new Pos(text(top, left), top, left)));
                         }
                     } else {
                         prevSymbolWritenToGroupIndex = -1;
                     }
                 }
         }
+        string text (int top, int left) {
+            string str = $"{arrText[top, left],1}";
+            if (str == null) {
+                Console.Write("null");
+                return "X";
+            }
+            return str;
+        }
+
         public void CellsOverwrite () {
             CellsOverwriteGroups();
 
