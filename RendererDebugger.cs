@@ -47,7 +47,8 @@ namespace ConsoleRenderer {
                 Console.Title = $"{state} ({threadsCount}) " +
                     $"[ f:{fps,5} / fT:{renderer.iter,5} / fQ:{framesQueue,4} / fS:{framesSkipped,4} | " +
                     $"rL:{renderLatecy,4} / {videoLatency/1000, 4} | w:{writes,5}; cC:{recolorsBG,5}; cT:{recolorsText,5}; c:{sets,5} ] {text}";
-            } else Console.Title = $"{renderer.title}";
+            //} else Console.Title = $"{renderer.title}";
+            } else Console.Title = $"non";
         }
 
 

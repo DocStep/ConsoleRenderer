@@ -93,12 +93,12 @@ namespace ConsoleRenderer {
             }
 
             while (engineWork) {
-                if (framesQueue > 0) {
+                if (0 < framesQueue) {
                     isPassing = true;
 
                     // Frame skip
                     int skipped = 0;
-                    while (framesQueue > 1 && skipped < 10) {
+                    while (1 < framesQueue  && skipped < 10) {
                         renderer.debugger.framesSkipped++;
                         //skipped++;
                         framesQueue--;
@@ -240,7 +240,8 @@ namespace ConsoleRenderer {
             Console.BackgroundColor = DefaultValues.cell;
             Console.Clear();
             Console.SetCursorPosition(0, 0);
-            Console.Title = (Process.GetCurrentProcess().Threads.Count - threadsStartCount).ToString();
+            //Console.Title = (Process.GetCurrentProcess().Threads.Count - threadsStartCount).ToString();
+            Console.Title = "ExitThread";
 
             isEngineWorking = false;
             //Thread.Sleep(1000);

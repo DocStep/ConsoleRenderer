@@ -1,16 +1,19 @@
+using FFMediaToolkit;
+using FFMediaToolkit.Decoding;
+using FFMediaToolkit.Graphics;
+using FFmpeg.AutoGen;
+using NAudio.Wave;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using FFMediaToolkit;
-using FFMediaToolkit.Decoding;
-using FFMediaToolkit.Graphics;
-using FFmpeg.AutoGen;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
+using System.Reflection.PortableExecutable;
+using System.Threading.Channels;
 
 
 namespace ConsoleRenderer {
@@ -41,7 +44,7 @@ namespace ConsoleRenderer {
             videoHeightLowRes = videoHeightRaw/pixelsToCell;
             videoWidthLowRes = videoWidthRaw/pixelsToCell;
             bpp = 3;
-            engine.fpsMax = file.Video.Info.AvgFrameRate-10;
+            engine.fpsMax = file.Video.Info.AvgFrameRate;
 
             engine.renderer = new Renderer(videoHeightLowRes, 2*videoWidthLowRes, colors);
             engine.renderer.debugger.state = engine.state.ToString();
@@ -54,7 +57,14 @@ namespace ConsoleRenderer {
             bufferLowRes = new Pixel[videoHeightLowRes, videoWidthLowRes];
 
             /// Audio
-
+            try { /// I know it sucks
+                AudioFileReader audioFile = new AudioFileReader(path);
+                WaveOutEvent outputDevice = new WaveOutEvent();
+                outputDevice.Init(audioFile);
+                outputDevice.Volume = 0.1f;
+                outputDevice.Play();
+            } catch (Exception _) { }
+            
             this.engine = engine;
         }
 
@@ -81,7 +91,7 @@ namespace ConsoleRenderer {
                 if (engine.renderer.iter % 10 == 0) {
                     string path = @$"D:/temp/frame{engine.renderer.iter/10}.png";
                     //SaveFrame(frameBufferRaw, videoWidth, videoHeight, path);
-                    SaveFrame(bufferLowRes, path);
+                    //SaveFrame(bufferLowRes, path);
                 }
 
                 if (engine.renderer.forceAscii) {
@@ -90,12 +100,16 @@ namespace ConsoleRenderer {
                     engine.renderer.VideoToArrays(bufferLowRes);
                 }
             } else {
-                Environment.Exit(0);
-                //engine.engineWork = false;
+                engine.engineWork = false;
+                //Environment.Exit(0);
             }
         }
         public void UpdateSkip () {
-            engine.engineWork = false;
+            if (!file.Video.TryGetNextFrame(bufferRaw_bytes)) {
+                /// <> <ch> to handle broken frame
+                engine.engineWork = false;
+                Environment.Exit(56);
+            }
         }
 
 

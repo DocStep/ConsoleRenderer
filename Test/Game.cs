@@ -24,7 +24,7 @@ namespace Test {
 
             //engine = Menu();
 
-            engine = Video(@"G:/temp/apple.mp4", 15, false);
+            engine = Video(@"G:/temp/apple.mp4", 8, false);
             //engine.fpsMax = 10;
 
             //engine = Video(@"G:/temp/apple.mp4", 15, false);
