@@ -17,7 +17,7 @@ namespace ConsoleRenderer {
 
         public MenuCanvas (Engine engine) {
             engine.state = States.menu;
-            engine.renderer = new Renderer(40, 10, DefaultValues.colorsBW);
+            engine.renderer = new Renderer(40, 10, DefaultValues.Colors2);
             engine.renderer.debugger.state = engine.state.ToString();
             engine.nextIterTime = DateTime.Now.Ticks + (long)(1f/engine.fpsMax*TimeSpan.TicksPerSecond);
 
@@ -32,7 +32,7 @@ namespace ConsoleRenderer {
             menuMain.Add("Video", menuVideo, () => {
                 //menuActive = menuVideo;
                 //engine.Video(@"D:/temp/apple.mp4", 15, DefaultValues.colorsGs, false);
-                engine.Video(@"D:/temp/apple.mp4", 20, DefaultValues.colorsGreys4, false);
+                engine.Video(@"D:/temp/apple.mp4", 20, DefaultValues.Colors4, false);
             });
             menuMain.Add("Video From Text", menuVideo, () => {
                 engine.VideoFromText(@"D:/DG2HeroAnimation.txt", 60, 24, 24);

@@ -31,6 +31,10 @@ namespace ConsoleRenderer {
         int videoWidthRaw;
         int videoHeightLowRes;
         int videoWidthLowRes;
+        float scaleW;
+        float scaleH;
+        int avgSamples;
+        float _1_avgSamples;
         int bpp;
 
         public Video (Engine engine, string path, int pixelsToCell, Dictionary<int, ConsoleColor> colors, bool useAscii) {
@@ -43,6 +47,10 @@ namespace ConsoleRenderer {
             videoWidthRaw = file.Video.Info.FrameSize.Width;
             videoHeightLowRes = videoHeightRaw/pixelsToCell;
             videoWidthLowRes = videoWidthRaw/pixelsToCell;
+            scaleH = (float)videoHeightRaw/videoHeightLowRes;
+            scaleW = (float)videoWidthRaw/videoWidthLowRes;
+            avgSamples = (int)(scaleH*scaleW);
+            _1_avgSamples = 1f/avgSamples;
             bpp = 3;
             engine.fpsMax = file.Video.Info.AvgFrameRate;
 
@@ -85,11 +93,11 @@ namespace ConsoleRenderer {
             //int bytesPerPixel = 4;
             //if (file.Video.TryGetNextFrame(frameBufferRaw)) {
             if (file.Video.TryGetNextFrame(bufferRaw_bytes)) {
-                Fill2DFromRaw(bufferRaw_bytes, bufferRaw, bpp);
-                ResizePixelBuffer(bufferRaw, bufferLowRes);
+                BufferBytesToPixels(bufferRaw_bytes, bufferRaw, bpp);
+                ResizeBufferPixels(bufferRaw, bufferLowRes, average: true);
 
-                if (engine.renderer.iter % 10 == 0) {
-                    string path = @$"D:/temp/frame{engine.renderer.iter/10}.png";
+                if (engine.renderer.framesTotal % 10 == 0) {
+                    string path = @$"D:/temp/frame{engine.renderer.framesTotal/10}.png";
                     //SaveFrame(frameBufferRaw, videoWidth, videoHeight, path);
                     //SaveFrame(bufferLowRes, path);
                 }
@@ -113,7 +121,7 @@ namespace ConsoleRenderer {
         }
 
 
-        void Fill2DFromRaw (byte[] raw, Pixel[,] buffer, int bpp) {
+        void BufferBytesToPixels (byte[] raw, Pixel[,] buffer, int bpp) {
             for (int y = 0; y < videoHeightRaw; y++) {
                 for (int x = 0; x < videoWidthRaw; x++) {
                     int idx = (y*videoWidthRaw + x)*bpp;
@@ -122,15 +130,29 @@ namespace ConsoleRenderer {
                 }
             }
         }
-        void ResizePixelBuffer (Pixel[,] src, Pixel[,] dst) {
-            float scaleX = (float)videoWidthRaw/videoWidthLowRes;
-            float scaleY = (float)videoHeightRaw/videoHeightLowRes;
-
+        void ResizeBufferPixels (Pixel[,] src, Pixel[,] dst, bool average = true) {
             for (int y = 0; y < videoHeightLowRes; y++) {
-                int srcY = (int)(scaleY*y);
+                int srcY = (int)(scaleH*y);
                 for (int x = 0; x < videoWidthLowRes; x++) {
-                    int srcX = (int)(scaleX*x);
-                    dst[y, x] = src[srcY, srcX];
+                    int srcX = (int)(scaleW*x);
+                    if (average) {
+                        long R = 0;
+                        long G = 0;
+                        long B = 0;
+                        for (int avgH = 0; avgH < scaleH; avgH++) {
+                            for (int avgW = 0; avgW < scaleW; avgW++) {
+                                Pixel pixel = src[srcY, srcX];
+                                R += pixel.R;
+                                G += pixel.G;
+                                B += pixel.B;
+                            }
+                        }
+                        dst[y, x].R = (byte)(_1_avgSamples*R);
+                        dst[y, x].G = (byte)(_1_avgSamples*G);
+                        dst[y, x].B = (byte)(_1_avgSamples*B);
+                    } else {
+                        dst[y, x] = src[srcY, srcX];
+                    }
                 }
             }
         }

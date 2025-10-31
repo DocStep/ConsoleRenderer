@@ -19,21 +19,21 @@ namespace ConsoleRenderer {
 
         public string state = "";
         public int threadsCount = 0;
-        int writes, recolorsBG, recolorsText, sets;
+        int writes, recolorsCell, recolorsText, cursorSets;
         long renderStart, renderEnd, videoLatency;
         int renderLatecy;
         public string text = "";
 
         public int framesQueue = 0;
         public int framesSkipped = 0;
-        public void SetCursor () { sets++; }
-        public void SetColorCell () { recolorsBG++; }
+        public void SetCursor () { cursorSets++; }
+        public void SetColorCell () { recolorsCell++; }
         public void SetColorText () { recolorsText++; }
         public void Write () { writes++; Thread.Sleep(delay); }
 
 
         public void DebugReset () {
-            writes = 0; recolorsBG = 0; recolorsText = 0; sets = 0;
+            writes = 0; recolorsCell = 0; recolorsText = 0; cursorSets = 0;
             renderStart = DateTime.Now.Ticks;
         }
 
@@ -45,8 +45,8 @@ namespace ConsoleRenderer {
                 videoLatency += renderLatecy;
                 //Console.Title = (renderer.title.Length > 0 ? $"{renderer.title} " : "") +
                 Console.Title = $"{state} ({threadsCount}) " +
-                    $"[ f:{fps,5} / fT:{renderer.iter,5} / fQ:{framesQueue,4} / fS:{framesSkipped,4} | " +
-                    $"rL:{renderLatecy,4} / {videoLatency/1000, 4} | w:{writes,5}; cC:{recolorsBG,5}; cT:{recolorsText,5}; c:{sets,5} ] {text}";
+                    $"[ fps:{fps,5} / fT:{renderer.framesTotal,5} / fQ:{framesQueue,4} / fS:{framesSkipped,4} | " +
+                    $"rL/vL:{renderLatecy,4}/{videoLatency/1000, 4} | w:{writes,5}; cC:{recolorsCell,5}; cT:{recolorsText,5}; c:{cursorSets,5} ] {text}";
             //} else Console.Title = $"{renderer.title}";
             } else Console.Title = $"non";
         }

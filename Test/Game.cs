@@ -24,7 +24,7 @@ namespace Test {
 
             //engine = Menu();
 
-            engine = Video(@"G:/temp/apple.mp4", 8, false);
+            engine = Video(@"G:/temp/apple.mp4", pixelsPerCell: 12, colors: DefaultValues.Colors4, useAscii: false);
             //engine.fpsMax = 10;
 
             //engine = Video(@"G:/temp/apple.mp4", 15, false);
@@ -34,30 +34,29 @@ namespace Test {
             //        { 2, ConsoleColor.White },
             //    };
 
-            //engine = VideoFromText(@"D:/DG2HeroAnimation.txt", 60, 24, 24);
-            /*engine = new Engine(this);
-            engine.game = new ConsoleRenderer.Game(engine, 60, 30, new Dictionary<int, ConsoleColor>() {
+            //engine = VideoFromText(@"G:/temp/DG2HeroAnimation.txt", 24, 60, 24);
+            /*
+                        engine = new Engine(this);
+                        engine.game = new ConsoleRenderer.Game(engine, 60, 30, new Dictionary<int, ConsoleColor>() {
+                                { -1, ConsoleColor.DarkGray },
+                                { 0, ConsoleColor.Black },
+                                { 1, ConsoleColor.Cyan },
+                                { 2, ConsoleColor.Magenta },
+                                { 3, ConsoleColor.Green },
+                                { 4, ConsoleColor.DarkYellow },
+                            });
+            */
+
+/*
+            engine = CreateGame(30, 30, new Dictionary<int, ConsoleColor>() {
                     { -1, ConsoleColor.DarkGray },
                     { 0, ConsoleColor.Black },
                     { 1, ConsoleColor.Cyan },
                     { 2, ConsoleColor.Magenta },
                     { 3, ConsoleColor.Green },
                     { 4, ConsoleColor.DarkYellow },
-                });*/
-            //renderer = game.engine.renderer;
-
-
-            /*engine = CreateGame(60, 30, new Dictionary<int, ConsoleColor>() {
-                    { -1, ConsoleColor.DarkGray },
-                    { 0, ConsoleColor.Black },
-                    { 1, ConsoleColor.Cyan },
-                    { 2, ConsoleColor.Magenta },
-                    { 3, ConsoleColor.Green },
-                    { 4, ConsoleColor.DarkYellow },
-
-                });*/
-            //renderer = engine.renderer;
-
+                });
+*/
         }
 
 
@@ -67,11 +66,10 @@ namespace Test {
         //AlgCircle alg = new AlgCircle();
         //AlgRectangle alg = new AlgRectangle();
         public override void Start () {
-            renderer = engine.renderer;
             engine.fpsMax = 1000;
             //renderer.debugger.debug = true;
 
-            renderer.arrCellColor = Simple.ArrayRectangulate(alg.Start(Simple.ArraySquare(renderer.arrCellColor, true)));
+            engine.renderer.arrCellColor = Simple.ArrayRectangulate(alg.Start(Simple.ArraySquare(engine.renderer.arrCellColor, true)));
 
             //for (int i = 0; i < 10; i++) {
             //    renderer.Write("01..010001101......", r.Next(renderer.height), r.Next(renderer.width), 2, 1, false);
@@ -79,7 +77,7 @@ namespace Test {
         }
 
         public override void Update () {
-            renderer.arrCellColor = Simple.ArrayRectangulate(alg.Update());
+            engine.renderer.arrCellColor = Simple.ArrayRectangulate(alg.Update());
 
             //for (int i = 0; i < 10; i++) {
             //    renderer.Write("01..010001101......", r.Next(renderer.height), r.Next(renderer.width)+1, 2, 1, false);

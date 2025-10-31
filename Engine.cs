@@ -166,25 +166,25 @@ namespace ConsoleRenderer {
         public void Video (string path, int pixelsPerCell, Dictionary<int, ConsoleColor> colors, bool useAscii) {
             ExitThreadEngine();
 
-            video = new Video(this, path, pixelsPerCell, DefaultValues.colorsGreys3, useAscii);
+            video = new Video(this, path, pixelsPerCell, colors, useAscii);
             renderer = video.engine.renderer;
 
             EngineStart(video.Start, video.Update, video.UpdateSkip, video.Exit);
         }
 
-        public void VideoFromText (string path, int width, int height, int fps) {
+        public void VideoFromText (string path, int height, int width, int fps) {
             ExitThreadEngine();
 
-            videoFromText = new VideoFromText(this, path, width, height, fps);
+            videoFromText = new VideoFromText(this, path, height, width, fps);
             renderer = videoFromText.engine.renderer;
 
             EngineStart(videoFromText.Start, videoFromText.Update, videoFromText.UpdateSkip, videoFromText.Exit);
         }
         
-        public void Game (int width, int height, Dictionary<int, ConsoleColor> colors) {
+        public void Game (int height, int width, Dictionary<int, ConsoleColor> colors) {
             ExitThreadEngine();
 
-            game = new Game(this, width, height, colors);
+            game = new Game(this, height, width, colors);
             renderer = game.engine.renderer;
 
             EngineStart(game.Start, game.Update, game.UpdateSkip, game.Exit);

@@ -9,9 +9,9 @@ namespace ConsoleRenderer {
         public Engine engine;
         public Renderer renderer;
 
-        public Game (Engine engine, int width, int height, Dictionary<int, ConsoleColor> colors) {
+        public Game (Engine engine, int height, int width, Dictionary<int, ConsoleColor> colors) {
             engine.state = States.game;
-            engine.renderer = new Renderer(width, height, colors);
+            engine.renderer = new Renderer(height, 2*width, colors);
             
             this.engine = engine;
             //renderer = engine.renderer;

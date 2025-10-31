@@ -8,14 +8,14 @@ namespace ConsoleRenderer {
     public class VideoFromText {
 
         public Engine engine;
-        public Renderer renderer;
+        //public Renderer renderer;
 
         StreamReader sr;
         string text = "";
 
-        public VideoFromText (Engine engine, string path, int width, int height, int fps) {
+        public VideoFromText (Engine engine, string path, int height, int width, int fps) {
             engine.state = States.videoFromText;
-            engine.renderer = new Renderer(width, height);
+            engine.renderer = new Renderer(height, width);
             engine.renderer.title = Path.GetFileName(path);
             engine.renderer.forceAscii = true;
             engine.fpsMax = fps;

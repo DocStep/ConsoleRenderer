@@ -9,16 +9,16 @@ namespace ConsoleRenderer {
 
         public static int width = 60;
         public static int height = 30;
-        public static Dictionary<int, ConsoleColor> colorsBW = new Dictionary<int, ConsoleColor>() {
+        public static Dictionary<int, ConsoleColor> Colors2 = new Dictionary<int, ConsoleColor>() {
                     { 0, ConsoleColor.Black },
                     { 1, ConsoleColor.White },
                 };
-        public static Dictionary<int, ConsoleColor> colorsGreys3 = new Dictionary<int, ConsoleColor>() {
+        public static Dictionary<int, ConsoleColor> Colors3 = new Dictionary<int, ConsoleColor>() {
                     { 0, ConsoleColor.Black },
                     { 1, ConsoleColor.DarkGray },
                     { 3, ConsoleColor.White },
                 };
-        public static Dictionary<int, ConsoleColor> colorsGreys4 = new Dictionary<int, ConsoleColor>() {
+        public static Dictionary<int, ConsoleColor> Colors4 = new Dictionary<int, ConsoleColor>() {
                     { 0, ConsoleColor.Black },
                     { 1, ConsoleColor.DarkGray },
                     { 2, ConsoleColor.Gray },
