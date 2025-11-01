@@ -59,10 +59,13 @@ namespace ConsoleRenderer {
             engine.renderer.title = Path.GetFileName(path);
             engine.renderer.forceAscii = useAscii;
             engine.renderer.debugger.framesQueue = 0;
+            //engine.renderer.blurPower = 1f;
 
             bufferRaw_bytes = new byte[videoHeightRaw*videoWidthRaw*bpp];
             bufferRaw = new Pixel[videoHeightRaw, videoWidthRaw];
             bufferLowRes = new Pixel[videoHeightLowRes, videoWidthLowRes];
+            engine.renderer.videoFrameBuffer = new Pixel[videoHeightRaw, videoWidthRaw];
+            engine.renderer.videoFrameBufferGs = new Pixel[videoHeightRaw, videoWidthRaw];
 
             /// Audio
             try { /// I know it sucks

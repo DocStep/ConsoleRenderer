@@ -12,6 +12,8 @@ using System.Threading;
 #pragma warning disable CA1416
 //#pragma warning disable CS8618
 namespace ConsoleRenderer {
+
+    /// <> Uses grey-scale yet
     public class Renderer {
 
         public RendererDebugger debugger;
@@ -30,6 +32,7 @@ namespace ConsoleRenderer {
 
             this.height = height;
             this.width = width;
+            widthVideo = width/2;
 
             arrText = new char[height, width];
             arrTextColor = new int[height, width];
@@ -65,6 +68,10 @@ namespace ConsoleRenderer {
             Console.BackgroundColor = DefaultValues.cell;
             string text = new string(' ', height*width);
             Console.Write(text);
+            //Simple.WriteArray(arrText);
+            
+            CellsFull();
+            CellsOverwrite();
         }
 
 
@@ -76,6 +83,7 @@ namespace ConsoleRenderer {
         public bool isPassing;
         public int height;
         public int width;
+        public int widthVideo;
         public int framesTotal = 0;
         public bool forceAscii = false;
         public string textAscii = "";
@@ -88,6 +96,8 @@ namespace ConsoleRenderer {
         public int[,] bufferTextColor;
         public int[,] bufferCellColor;
 
+        public Pixel[,] videoFrameBuffer;
+        public Pixel[,] videoFrameBufferGs;
 
 
 
@@ -100,15 +110,9 @@ namespace ConsoleRenderer {
                 SetCursor(0, 0);
                 Write(textAscii);
             } else {
-                if (framesTotal == 0) {
-                    //Simple.WriteArray(arrText);
-                    CellsFull();
-                    CellsOverwrite();
-                } else {
-                    //Simple.WriteArray(arrText);
-                    //CellsFull();
-                    CellsOverwrite();
-                }
+                //Simple.WriteArray(arrText);
+                //CellsFull();
+                CellsOverwrite();
             }
 
 
@@ -139,9 +143,8 @@ namespace ConsoleRenderer {
         public float blurPower = 0;
 
         void VideoFramePixels (Pixel[,] frame) {
-            int width = (int)(0.5*this.width);
             for (int top = 0; top < height; top++) {
-                for (int left = 0; left < width; left++) {
+                for (int left = 0; left < widthVideo; left++) {
                     Pixel pixel = frame[top, left];
                     pixels[top, left] = pixel;
                     pixelsGs[top, left] = ((pixel.R*0.3f) + (pixel.G*0.59f) + (pixel.B*0.11f))/256f;
@@ -150,13 +153,12 @@ namespace ConsoleRenderer {
         }
 
         public void VideoToArrays (Pixel[,] frame) {
+            if (0 < blurPower) frame = VideoFrameBlur(frame, blurPower);
+
             VideoFramePixels(frame);
 
-            //if (0 < blurPower) FrameBlur(frame, 0.1f);
-
-            int width = (int)(0.5*this.width);
             for (int top = 0; top < height; top++) {
-                for (int left = 0; left < width; left++) {
+                for (int left = 0; left < widthVideo; left++) {
                     int idx = (int)(pixelsGs[top, left]*colors.Count);
                     int i_color = i_colorsGs[idx];
                     arrCellColor[top, 2*left] = i_color;
@@ -173,7 +175,7 @@ namespace ConsoleRenderer {
         public void VideoToAscii (Pixel[,] frame) {
             VideoFramePixels(frame);
 
-            //if (0 < blurPower) FrameBlur(frame, blurPower);
+            if (0 < blurPower)  VideoFrameBlur(frame, blurPower);
 
             textAscii = "";
             int width = (int)(0.5*this.width);
@@ -189,24 +191,34 @@ namespace ConsoleRenderer {
             }
         }
 
-        void FrameBlur (Pixel[,] frame, float power) {
-            //float power = 0.5f;
+        Pixel[,] VideoFrameBlur (Pixel[,] frame, float power) {
+            int radius = Math.Max(1, (int)power);
+            float strength = 1f/((2*radius + 1)*(2*radius + 1));
+
             for (int top = 0; top < height; top++) {
-                for (int left = 0; left < width; left++) {
-                    float sum = (1f - power)*pixelsGs[top, left];
-                    float dev = 1 - power;
-                    for (int itop = -1; itop <= 1; itop++) {
-                        for (int ileft = -1; ileft <= 1; ileft++) {
-                            if (0 <= top+itop && top+itop < height &&
-                                0 <= left+ileft && left+ileft < width) {
-                                sum += power*pixelsGs[top+itop, left+ileft];
-                                dev += power;
-                            }
+                for (int left = 0; left < widthVideo; left++) {
+                    float r = 0;
+                    float g = 0;
+                    float b = 0;
+                    for (int topK = -radius; topK <= radius; topK++) {
+                        int topS = Math.Clamp(top + topK, 0, height - 1);
+                        for (int leftK = -radius; leftK <= radius; leftK++) {
+                            int leftS = Math.Clamp(left + leftK, 0, widthVideo - 1);
+                            Pixel p = frame[topS, leftS];
+                            r += p.R;
+                            g += p.G;
+                            b += p.B;
                         }
                     }
-                    pixelsGs[top, left] = sum/dev;
+
+                    videoFrameBufferGs[top, left].R = (byte)(strength*r);
+                    videoFrameBufferGs[top, left].G = (byte)(strength*g);
+                    videoFrameBufferGs[top, left].B = (byte)(strength*b);
                 }
             }
+
+            //frame = videoFrameBufferGs;
+            return frame = videoFrameBufferGs;
         }
 
 
@@ -250,7 +262,7 @@ namespace ConsoleRenderer {
                     arrText[top, 2*left] = DefaultValues.videoCellPairChars.ElementAt(idx_ascii).Key;
                     arrText[top, 2*left+1] = DefaultValues.videoCellPairChars.ElementAt(idx_ascii).Value;
 
-                    if (grayScale > 0.5f) {
+                    if (0.5f < grayScale) {
                         arrTextColor[top, 2*left] = colors.ElementAt(colors.Count-1-idx).Key;
                         arrTextColor[top, 2*left+1] = colors.ElementAt(colors.Count-1-idx).Key;
                     } else {

@@ -22,6 +22,33 @@ namespace ConsoleRenderer {
         public static Pixel white = new Pixel(255, 255, 255);
 
         public byte Gray () => (byte)((R + G + B) / 3); // simple greyscale
+
+
+        public static Pixel operator + (Pixel pixel1, Pixel pixel2) {
+            pixel1.R = (byte)(pixel1.R + pixel2.R);
+            pixel1.G = (byte)(pixel1.G + pixel2.G);
+            pixel1.B = (byte)(pixel1.B + pixel2.B);
+            return pixel1;
+        }
+        public static Pixel operator - (Pixel pixel1, Pixel pixel2) {
+            pixel1.R = (byte)(pixel1.R - pixel2.R);
+            pixel1.G = (byte)(pixel1.G - pixel2.G);
+            pixel1.B = (byte)(pixel1.B - pixel2.B);
+            return pixel1;
+        }
+        public static Pixel operator * (Pixel pixel, float value) {
+            pixel.R = (byte)(pixel.R*value);
+            pixel.G = (byte)(pixel.G*value);
+            pixel.B = (byte)(pixel.B*value);
+            return pixel;
+        }
+        public static Pixel operator / (Pixel pixel, float value) {
+            pixel.R = (byte)(pixel.R/value);
+            pixel.G = (byte)(pixel.G/value);
+            pixel.B = (byte)(pixel.B/value);
+            return pixel;
+        }
+
     }
 
 
