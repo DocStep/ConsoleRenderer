@@ -25,8 +25,8 @@ namespace ConsoleRenderer {
                     { 3, ConsoleColor.White },
                 };
 
-        public static ConsoleColor text = ConsoleColor.White;
-        public static ConsoleColor cell = ConsoleColor.Black;
+        public static ConsoleColor c_Text = ConsoleColor.White;
+        public static ConsoleColor c_Cell = ConsoleColor.Black;
 
         public static int pixelsToCell = 20;
 

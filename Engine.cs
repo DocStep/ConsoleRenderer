@@ -6,12 +6,13 @@ using static ConsoleRenderer.DefaultValues;
 using static ConsoleRenderer.Input;
 
 
-public enum States {
-    none,
-    menu,
-    video,
-    videoFromText,
-    game,
+public enum EngineStates {
+    none = -1,
+
+    Menu,
+    Video,
+    VideoFromText,
+    Game,
 }
 
 #pragma warning disable CA1416
@@ -19,51 +20,49 @@ public enum States {
 namespace ConsoleRenderer {
     public class Engine {
 
-        public ConsoleGame consoleGame;
-        public Renderer renderer;
-        public Thread mainThread, controlThread;
-        public Input input;
+        public static Engine instance;
 
-        public MenuCanvas menu;
-        public Video video;
-        public VideoFromText videoFromText;
-        public Game game;
+        //public static Action de_Init;
+        //public static Action de_Start;
+        //public static Action de_Update;
+        //public static Action de_UpdateSkip;
+        //public static Action de_Exit;
 
-        public delegate void Void ();
-        public Void de_Start;
-        public Void de_Update;
-        public Void Start;
-        public Void Update;
-        public Void UpdateSkip;
-        public Void Exit;
+        public static ConsoleGame ConsoleGame;
+        public static Renderer Renderer;
+
+        public Thread th_Control;
+        public Thread th_Engine;
+        public Input Input;
 
 
+        public Engine () {
+            Init_internal();
+        }
         public Engine (ConsoleGame game) {
-            consoleGame = game;
-            de_Start += game.Start;
-            de_Update += game.Update;
-            input = new Input();
+            ConsoleGame = game;
+            Engine.Renderer.Init(height, width);
+        }
+        void Init_internal () {
+            instance = this;
+            Renderer = new Renderer();
+            Input = new Input();
             threadsStartCount = Process.GetCurrentProcess().Threads.Count;
-        }
-        public void EngineStart (Void start, Void update, Void updateSkip, Void exit) {
-            Start = start;
-            Update = update;
-            UpdateSkip = updateSkip;
-            Exit = exit;
-
             nextIterTime = DateTime.Now.Ticks + (long)(1f/fpsMax*TimeSpan.TicksPerSecond);
-            controlThread = new Thread(ThreadControl);
-            controlThread.Start();
-            mainThread = new Thread(ThreadEngine);
-            mainThread.Start();
 
-            renderer.debugger.threadsCount = Process.GetCurrentProcess().Threads.Count - threadsStartCount;
+            th_Control = new Thread(ThreadControl);
+            th_Engine = new Thread(ThreadEngine);
 
-            // Start dStart
+            Renderer.Debugger.threadsCount = Process.GetCurrentProcess().Threads.Count - threadsStartCount;
+        }
+        public void Start () {
+            if (ConsoleGame == null) return;
+            
+            th_Control.Start();
+            th_Engine.Start();
         }
 
-
-        public States state;
+        public EngineStates state;
         public bool engineWork;
         public bool appWork;
         public int threadsStartCount;
@@ -75,7 +74,7 @@ namespace ConsoleRenderer {
         public bool isPassing;
         public bool isSelfEnd;
 
-        public double fpsMax = 60;
+        public static double fpsMax = 60;
 
 
 
@@ -83,14 +82,7 @@ namespace ConsoleRenderer {
             isEngineWorking = true;
             engineWork = true;
 
-            if (Start != null) {
-                isPassing = true;
-                Start();
-                if (state == States.game) de_Start.Invoke();
-
-                renderer.Pass();
-                isPassing = false;
-            }
+            ConsoleGame?.Start();
 
             while (engineWork) {
                 if (0 < framesQueue) {
@@ -99,21 +91,22 @@ namespace ConsoleRenderer {
                     // Frame skip
                     int skipped = 0;
                     while (1 < framesQueue  && skipped < 10) {
-                        renderer.debugger.framesSkipped++;
+                        Renderer.Debugger.framesSkipped++;
                         //skipped++;
                         framesQueue--;
 
-                        if (UpdateSkip != null) UpdateSkip();
+                        ConsoleGame?.Start();
+                        //de_UpdateSkip?.Invoke();
                     }
 
                     // Frame
                     framesQueue--;
 
-                    if (Update != null) Update?.Invoke();
-                    if (state == States.game) de_Update?.Invoke();
+                    ConsoleGame?.Update();
+                    //de_Update?.Invoke();
 
-                    renderer.debugger.framesQueue = framesQueue;
-                    renderer.Pass();
+                    Renderer.Debugger.framesQueue = framesQueue;
+                    Renderer.Pass();
                     isPassing = false;
                 }
             }
@@ -124,7 +117,7 @@ namespace ConsoleRenderer {
             appWork = true;
             nextIterTime = DateTime.Now.Ticks;
             while (appWork) {
-                Keys();
+                ConsoleGame?.Keys();
 
                 if (DateTime.Now.Ticks >= nextIterTime + (long)(1f/fpsMax*TimeSpan.TicksPerSecond)) {
                     nextIterTime += (long)(1f/fpsMax*TimeSpan.TicksPerSecond);
@@ -134,110 +127,16 @@ namespace ConsoleRenderer {
 
             ExitThreadControl();
         }
-        void Keys () {
-            switch (state) {
-                case States.menu:
-                    if (menu != null) menu.Keys();
-                    break;
-                case States.video:
-                    if (video != null) video.Keys();
-                    break;
-                case States.videoFromText:
-                    if (videoFromText != null) videoFromText.Keys();
-                    break;
-                case States.game:
-                    if (game != null) game.Keys();
-                    break;
-            }
-
-        }
 
 
-
-        public void Menu () {
-            ExitThreadEngine();
-
-            menu = new MenuCanvas(this);
-            renderer = menu.engine.renderer;
-
-            EngineStart(menu.Start, menu.Update, menu.UpdateSkip, menu.Exit);
-        }
-        
-        public void Video (string path, int pixelsPerCell, Dictionary<int, ConsoleColor> colors, bool useAscii) {
-            ExitThreadEngine();
-
-            video = new Video(this, path, pixelsPerCell, colors, useAscii);
-            renderer = video.engine.renderer;
-
-            EngineStart(video.Start, video.Update, video.UpdateSkip, video.Exit);
-        }
-
-        public void VideoFromText (string path, int height, int width, int fps) {
-            ExitThreadEngine();
-
-            videoFromText = new VideoFromText(this, path, height, width, fps);
-            renderer = videoFromText.engine.renderer;
-
-            EngineStart(videoFromText.Start, videoFromText.Update, videoFromText.UpdateSkip, videoFromText.Exit);
-        }
-        
-        public void Game (int height, int width, Dictionary<int, ConsoleColor> colors) {
-            ExitThreadEngine();
-
-            game = new Game(this, height, width, colors);
-            renderer = game.engine.renderer;
-
-            EngineStart(game.Start, game.Update, game.UpdateSkip, game.Exit);
-        }
-
-
-
-        //void EngineStop () {
-        //    engineWork = false;
-        //
-        //    Thread.Sleep(0);
-        //    Console.Clear();
-        //    Console.ForegroundColor = DefaultValues.text;
-        //    Console.BackgroundColor = DefaultValues.cell;
-        //    Console.SetCursorPosition(0, 0);
-        //
-        //}
 
 
         void ExitThreadEngine () {
             engineWork = false;
+            state = EngineStates.none;
 
-            //Thread.Sleep(100);
-            switch (state) {
-                case States.menu:
-                    menu = null;
-
-                    break;
-                case States.video:
-                    video.Exit();
-                    video = null;
-
-                    break;
-                case States.videoFromText:
-                    videoFromText = null;
-
-                    break;
-                case States.game:
-                    game = null;
-
-                    break;
-            }
-            state = States.none;
-            //Thread.Sleep(100);
-
-            // if (isSelfEnd) {
-            //     isSelfEnd = false;
-            //     Menu();
-            // }
-
-            //while (isPassing) { }
-            Console.ForegroundColor = DefaultValues.text;
-            Console.BackgroundColor = DefaultValues.cell;
+            Console.ForegroundColor = DefaultValues.c_Text;
+            Console.BackgroundColor = DefaultValues.c_Cell;
             Console.Clear();
             Console.SetCursorPosition(0, 0);
             //Console.Title = (Process.GetCurrentProcess().Threads.Count - threadsStartCount).ToString();

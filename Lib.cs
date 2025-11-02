@@ -4,25 +4,29 @@ using System.Linq;
 
 
 namespace ConsoleRenderer {
-    public class Simple {
+    public class lib {
 
-        public static int[,] ArraySquare (int[,] array, bool pickFirstSymbol) {
-            int[,] newArray = new int[array.GetLength(0), array.GetLength(1)/2];
-            for (int top = 0; top < newArray.GetLength(0); top++)
-                for (int left = 0; left < newArray.GetLength(1); left++) {
-                    if (pickFirstSymbol) newArray[top, left] = array[top, 2*left];
-                    else newArray[top, left] = array[top, 2*left+1];
+        public static int[,] ArrayToHalf (int[,] array, int[,] halfed, bool pickFirstSymbol) {
+            int length0 = array.GetLength(0);
+            int length1 = array.GetLength(1);
+            int length1New = length1/2;
+            for (int top = 0; top < length0; top++)
+                for (int left = 0; left < length1New; left++) {
+                    if (pickFirstSymbol) halfed[top, left] = array[top, 2*left];
+                    else halfed[top, left] = array[top, 2*left+1];
                 }
-            return newArray;
+            return halfed;
         }
-        public static int[,] ArrayRectangulate (int[,] array) {
-            int[,] newArray = new int[array.GetLength(0), 2*array.GetLength(1)];
-            for (int top = 0; top < array.GetLength(0); top++)
-                for (int left = 0; left < array.GetLength(1); left++) {
-                    newArray[top, 2*left] = array[top, left];
-                    newArray[top, 2*left+1] = array[top, left];
+        public static int[,] ArrayToDoubled (int[,] array, int[,] doubled) {
+            int length0 = array.GetLength(0);
+            int length1 = array.GetLength(1);
+            int length1New = 2*length1;
+            for (int top = 0; top < length0; top++)
+                for (int left = 0; left < length1; left++) {
+                    doubled[top, 2*left] = array[top, left];
+                    doubled[top, 2*left+1] = array[top, left];
                 }
-            return newArray;
+            return doubled;
         }
 
         public static Dictionary<char, char> cellChars = new Dictionary<char, char>() {
@@ -33,8 +37,10 @@ namespace ConsoleRenderer {
             { '<', '>' },
         };
         public static char[,] ArrayValuesRectangulate (char[,] array) {
-            for (int top = 0; top < array.GetLength(0); top++)
-                for (int left = 0; left < array.GetLength(1); left += 2) {
+            int length0 = array.GetLength(0);
+            int length1 = array.GetLength(1);
+            for (int top = 0; top < length0; top++)
+                for (int left = 0; left < length1; left += 2) {
                     if (cellChars.ContainsKey(array[top, 2*left])) {
                         //array[top, 2*left] = array[top, left];
                         cellChars.TryGetValue(array[top, 2*left], out array[top, 2*left+1]);
@@ -46,30 +52,13 @@ namespace ConsoleRenderer {
         }
 
 
-        public static float[,] ArrayFill (float[,] array, int value) {
+        public static T[,] ArrayFill<T> (T[,] array, T value) {
             for (int top = 0; top < array.GetLength(0); top++)
                 for (int left = 0; left < array.GetLength(1); left++)
                     array[top, left] = value;
             return array;
         }
-        public static int[,] ArrayFill (int[,] array, int value) {
-            for (int top = 0; top < array.GetLength(0); top++) 
-                for (int left = 0; left < array.GetLength(1); left++) 
-                    array[top, left] = value;
-            return array;
-        }
-        public static string[,] ArrayFill (string[,] array, string value) {
-            for (int top = 0; top < array.GetLength(0); top++) 
-                for (int left = 0; left < array.GetLength(1); left++) 
-                    array[top, left] = value;
-            return array;
-        }
-        public static char[,] ArrayFill (char[,] array, char value) {
-            for (int top = 0; top < array.GetLength(0); top++)
-                for (int left = 0; left < array.GetLength(1); left++)
-                    array[top, left] = value;
-            return array;
-        }
+        
 
         public static int[,] ArrayFlip (int[,] arr) {
             for (int left = 0; left < arr.GetLength(1); left++) 
@@ -97,8 +86,8 @@ namespace ConsoleRenderer {
         public static void WriteArray (int[,] arr) {
             Console.Clear();
             Console.SetCursorPosition(0, 0);
-            Console.ForegroundColor = DefaultValues.text;
-            Console.BackgroundColor = DefaultValues.cell;
+            Console.ForegroundColor = DefaultValues.c_Text;
+            Console.BackgroundColor = DefaultValues.c_Cell;
             for (int top = 0; top < arr.GetLength(0); top++) 
                 for (int left = 0; left < arr.GetLength(1); left++) 
                     Console.Write(arr[top, left]);
@@ -107,8 +96,8 @@ namespace ConsoleRenderer {
         public static void WriteArray (string[,] arr) {
             Console.Clear();
             Console.SetCursorPosition(0, 0);
-            Console.ForegroundColor = DefaultValues.text;
-            Console.BackgroundColor = DefaultValues.cell;
+            Console.ForegroundColor = DefaultValues.c_Text;
+            Console.BackgroundColor = DefaultValues.c_Cell;
             for (int top = 0; top < arr.GetLength(0); top++) 
                 for (int left = 0; left < arr.GetLength(1); left++) 
                     Console.Write(arr[top, left]);
@@ -117,8 +106,8 @@ namespace ConsoleRenderer {
         public static void WriteArrayColor (int[,] arr, Dictionary<int, ConsoleColor> colors) {
             Console.Clear();
             Console.SetCursorPosition(0, 0);
-            Console.ForegroundColor = DefaultValues.text;
-            Console.BackgroundColor = DefaultValues.cell;
+            Console.ForegroundColor = DefaultValues.c_Text;
+            Console.BackgroundColor = DefaultValues.c_Cell;
             for (int top = 0; top < arr.GetLength(0); top++)
                 for (int left = 0; left < arr.GetLength(1); left++) {
                     Console.BackgroundColor = colors.First(x => x.Key == arr[top, left]).Value;

@@ -16,20 +16,23 @@ namespace ConsoleRenderer {
     /// <> Uses grey-scale yet
     public class Renderer {
 
-        public RendererDebugger debugger;
+        public static RendererDebugger Debugger;
 
+        public Renderer () {
+            Renderer.Debugger = new RendererDebugger(this);
+        }
         public Renderer (int height, int width, Dictionary<int, ConsoleColor> colors) {
+            Renderer.Debugger = new RendererDebugger(this);
             this.colors = colors;
             Init(height, width);
         }
         public Renderer (int height, int width) {
+            Renderer.Debugger = new RendererDebugger(this);
             colors = DefaultValues.Colors2;
             Init(height, width);
         }
 
-        void Init (int height, int width) {
-            debugger = new RendererDebugger(this);
-
+        public void Init (int height, int width) {
             this.height = height;
             this.width = width;
             widthVideo = width/2;
@@ -41,9 +44,9 @@ namespace ConsoleRenderer {
             pixelsGs = new float[height, width/2];
 
             int i_colorDef = colors.ElementAt(0).Key;
-            arrText = Simple.ArrayFill(arrText, ' ');
-            arrTextColor = Simple.ArrayFill(arrTextColor, i_colorDef);
-            arrCellColor = Simple.ArrayFill(arrCellColor, i_colorDef);
+            arrText = lib.ArrayFill(arrText, ' ');
+            arrTextColor = lib.ArrayFill(arrTextColor, i_colorDef);
+            arrCellColor = lib.ArrayFill(arrCellColor, i_colorDef);
             //videoCellsGs = Simple.ArrayFill(videoCellsGs, 0);
 
             bufferText = new char[height, width];
@@ -54,6 +57,9 @@ namespace ConsoleRenderer {
 
             InitCanvas(height, width);
             EmptyCanvas(height, width);
+
+            Renderer.Debugger.state = Engine.instance.state.ToString();
+            Renderer.Debugger.framesQueue = 0;
         }
 
         void InitCanvas (int height, int width) {
@@ -64,8 +70,8 @@ namespace ConsoleRenderer {
         }
         void EmptyCanvas (int height, int width) {
             Console.SetCursorPosition(0, 0);
-            Console.ForegroundColor = DefaultValues.text;
-            Console.BackgroundColor = DefaultValues.cell;
+            Console.ForegroundColor = DefaultValues.c_Text;
+            Console.BackgroundColor = DefaultValues.c_Cell;
             string text = new string(' ', height*width);
             Console.Write(text);
             //Simple.WriteArray(arrText);
@@ -104,7 +110,7 @@ namespace ConsoleRenderer {
         public void Pass () {
             isPassing = true;
             framesTotal++;
-            debugger.DebugReset();
+            Renderer.Debugger.DebugReset();
 
             if (forceAscii) {
                 SetCursor(0, 0);
@@ -116,7 +122,7 @@ namespace ConsoleRenderer {
             }
 
 
-            debugger.DebugOut();
+            Renderer.Debugger.DebugOut();
 
             ResetLayers();
             isPassing = false;
@@ -127,10 +133,10 @@ namespace ConsoleRenderer {
             Array.Copy(arrTextColor, bufferTextColor, arrTextColor.Length);
             Array.Copy(arrCellColor, bufferCellColor, arrCellColor.Length);
 
-            arrText = Simple.ArrayFill(arrText, ' ');
+            arrText = lib.ArrayFill(arrText, ' ');
             int colorDef = i_getColorDef();
-            arrTextColor = Simple.ArrayFill(arrTextColor, colorDef);
-            arrCellColor = Simple.ArrayFill(arrCellColor, colorDef);
+            arrTextColor = lib.ArrayFill(arrTextColor, colorDef);
+            arrCellColor = lib.ArrayFill(arrCellColor, colorDef);
         }
         public int i_getColorDef () {
             if (colors.Count == 0) return -1;
@@ -378,8 +384,8 @@ namespace ConsoleRenderer {
         void CellsOverwriteGroups () {
             groupsToWriteOver.Clear();
             int prevSymbolWritenToGroupIndex = -1;
-            for (int top = 0; top < arrCellColor.GetLength(0); top++)
-                for (int left = 0; left < arrCellColor.GetLength(1); left++) {
+            for (int top = 0; top < height; top++)
+                for (int left = 0; left < width; left++) {
                     int textColor = arrTextColor[top, left];
                     int cellColor = arrCellColor[top, left];
 
@@ -447,18 +453,18 @@ namespace ConsoleRenderer {
         int cursorLeft = 0;
         public void Write (string s) {
             Console.Write(s);
-            debugger.Write();
+            Debugger.Write();
         }
         public void WriteLine (string s) {
             Console.WriteLine(s);
-            debugger.Write();
+            Debugger.Write();
         }
         public void SetColorCell (ConsoleColor colorCell) {
             int colorKey = colors.First(x => x.Value == colorCell).Key;
             if (this.colorCell != colorKey) {
                 this.colorCell = colorKey;
                 Console.BackgroundColor = colorCell;
-                debugger.SetColorCell();
+                Debugger.SetColorCell();
             }
         }
         public void SetColorCell (int colorCell) {
@@ -466,7 +472,7 @@ namespace ConsoleRenderer {
                 this.colorCell = colorCell;
                 Console.BackgroundColor = colors.First(x => x.Key == colorCell).Value;
                 //Console.BackgroundColor = colors[colorCell];
-                debugger.SetColorCell();
+                Debugger.SetColorCell();
             }
         }
         // add "space" string check
@@ -475,14 +481,14 @@ namespace ConsoleRenderer {
             if (this.colorText != colorKey) {
                 this.colorText = colorKey;
                 Console.ForegroundColor = colorText;
-                debugger.SetColorText();
+                Debugger.SetColorText();
             }
         }
         public void SetColorText (int colorText) {
             if (this.colorText != colorText) {
                 this.colorText = colorText;
                 Console.ForegroundColor = colors.First(x => x.Key == colorText).Value;
-                debugger.SetColorText();
+                Debugger.SetColorText();
             }
         }
         public void SetCursor (int top, int left) {
@@ -492,7 +498,7 @@ namespace ConsoleRenderer {
                 //Console.SetWindowSize(width, height);
                 //if (left < Console.WindowWidth && left < Console.WindowHeight) 
                 Console.SetCursorPosition(left, top);
-                debugger.SetCursor();
+                Debugger.SetCursor();
             }
         }
 

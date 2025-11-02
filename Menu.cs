@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 
 namespace ConsoleRenderer {
-    public class Menu {
+    public class Menu : ConsoleGame {
 
         public class Line {
             public Line (string name, Menu menu, Action action) {
@@ -17,14 +17,13 @@ namespace ConsoleRenderer {
             public Action action;
         }
 
-        Renderer renderer;
+        //Renderer renderer;
 
-        public Menu (string name, bool main, Renderer renderer) {
+        public Menu (string name, bool main) {
             this.name = name;
             this.main = main;
-            this.renderer = renderer;
 
-            renderer.Write(name, 0, 2, 1, 0, false);
+            Engine.Renderer.Write(name, 0, 2, 1, 0, false);
         }
 
 
@@ -47,21 +46,21 @@ namespace ConsoleRenderer {
 
         public void Select (int index) {
             index = Math.Clamp(index, 0, lines.Count-1);
-            if (selected >= 0) renderer.Write(lines[selected].name, selected+2, 0, 1, 0, false);
-            renderer.Write(lines[index].name, index+2, 0, 0, 1, false);
+            if (0 <= selected) Engine.Renderer.Write(lines[selected].name, selected+2, 0, 1, 0, false);
+            Engine.Renderer.Write(lines[index].name, index+2, 0, 0, 1, false);
             selected = index;
         }
 
         public void Write () {
-            renderer.Write(name, 0, 2, 1, 0, false);
+            Engine.Renderer.Write(name, 0, 2, 1, 0, false);
             for (int i = 0; i < lines.Count; i++) {
                 if (i == selected) {
-                    renderer.Write(lines[i].name, i+2, 0, 0, 1, false);
+                    Engine.Renderer.Write(lines[i].name, i+2, 0, 0, 1, false);
                 } else {
-                    renderer.Write(lines[i].name, i+2, 0, 1, 0, false);
+                    Engine.Renderer.Write(lines[i].name, i+2, 0, 1, 0, false);
                 }
             }
-            renderer.Write(back.name, lines.Count+3, 0, 1, 0, false);
+            Engine.Renderer.Write(back.name, lines.Count+3, 0, 1, 0, false);
         }
 
     }

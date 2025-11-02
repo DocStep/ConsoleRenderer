@@ -17,10 +17,48 @@ using System.Threading.Channels;
 
 
 namespace ConsoleRenderer {
-    public class Video {
+    public class Video : ConsoleGame {
 
-        public Engine engine;
-        //public Renderer renderer;
+        public Video (string path, int pixelsPerCell, Dictionary<int, ConsoleColor> colors, bool useAscii) {
+            Engine.instance.state = EngineStates.Video;
+
+            FFmpegLoader.FFmpegPath = @"D:\ffmpeg\bin";
+
+            file = MediaFile.Open(path);
+            videoHeightRaw = file.Video.Info.FrameSize.Height;
+            videoWidthRaw = file.Video.Info.FrameSize.Width;
+            videoHeightLowRes = videoHeightRaw/pixelsPerCell;
+            videoWidthLowRes = videoWidthRaw/pixelsPerCell;
+            scaleH = (float)videoHeightRaw/videoHeightLowRes;
+            scaleW = (float)videoWidthRaw/videoWidthLowRes;
+            avgSamples = (int)(scaleH*scaleW);
+            _1_avgSamples = 1f/avgSamples;
+            bpp = 3;
+            Engine.fpsMax = file.Video.Info.AvgFrameRate;
+
+            Engine.Renderer = new Renderer(videoHeightLowRes, 2*videoWidthLowRes, colors);
+            Engine.Renderer.title = Path.GetFileName(path);
+            Engine.Renderer.forceAscii = useAscii;
+            //Engine.Renderer.debugger.framesQueue = 0;
+            //engine.renderer.blurPower = 1f;
+            Engine.Renderer.videoFrameBuffer = new Pixel[videoHeightRaw, videoWidthRaw];
+            Engine.Renderer.videoFrameBufferGs = new Pixel[videoHeightRaw, videoWidthRaw];
+
+
+            bufferRaw_bytes = new byte[videoHeightRaw*videoWidthRaw*bpp];
+            bufferRaw = new Pixel[videoHeightRaw, videoWidthRaw];
+            bufferLowRes = new Pixel[videoHeightLowRes, videoWidthLowRes];
+
+            /// Audio
+            try { /// I know it sucks
+                AudioFileReader audioFile = new AudioFileReader(path);
+                WaveOutEvent outputDevice = new WaveOutEvent();
+                outputDevice.Init(audioFile);
+                outputDevice.Volume = 0.1f;
+                outputDevice.Play();
+            } catch (Exception _) { }
+        }
+
 
         MediaFile file;
         //Bitmap frame;
@@ -37,89 +75,36 @@ namespace ConsoleRenderer {
         float _1_avgSamples;
         int bpp;
 
-        public Video (Engine engine, string path, int pixelsToCell, Dictionary<int, ConsoleColor> colors, bool useAscii) {
-            engine.state = States.video;
-
-            FFmpegLoader.FFmpegPath = @"D:\ffmpeg\bin";
-
-            file = MediaFile.Open(path);
-            videoHeightRaw = file.Video.Info.FrameSize.Height;
-            videoWidthRaw = file.Video.Info.FrameSize.Width;
-            videoHeightLowRes = videoHeightRaw/pixelsToCell;
-            videoWidthLowRes = videoWidthRaw/pixelsToCell;
-            scaleH = (float)videoHeightRaw/videoHeightLowRes;
-            scaleW = (float)videoWidthRaw/videoWidthLowRes;
-            avgSamples = (int)(scaleH*scaleW);
-            _1_avgSamples = 1f/avgSamples;
-            bpp = 3;
-            engine.fpsMax = file.Video.Info.AvgFrameRate;
-
-            engine.renderer = new Renderer(videoHeightLowRes, 2*videoWidthLowRes, colors);
-            engine.renderer.debugger.state = engine.state.ToString();
-            engine.renderer.title = Path.GetFileName(path);
-            engine.renderer.forceAscii = useAscii;
-            engine.renderer.debugger.framesQueue = 0;
-            //engine.renderer.blurPower = 1f;
-
-            bufferRaw_bytes = new byte[videoHeightRaw*videoWidthRaw*bpp];
-            bufferRaw = new Pixel[videoHeightRaw, videoWidthRaw];
-            bufferLowRes = new Pixel[videoHeightLowRes, videoWidthLowRes];
-            engine.renderer.videoFrameBuffer = new Pixel[videoHeightRaw, videoWidthRaw];
-            engine.renderer.videoFrameBufferGs = new Pixel[videoHeightRaw, videoWidthRaw];
-
-            /// Audio
-            try { /// I know it sucks
-                AudioFileReader audioFile = new AudioFileReader(path);
-                WaveOutEvent outputDevice = new WaveOutEvent();
-                outputDevice.Init(audioFile);
-                outputDevice.Volume = 0.1f;
-                outputDevice.Play();
-            } catch (Exception _) { }
-            
-            this.engine = engine;
-        }
 
 
 
-        public void Keys () {
-            if (Input.GetKeyDown('Q')) {
-                engine.Menu();
-            }
-            if (Input.GetKeyDown('X')) {
-                engine.renderer.debugger.debug = !engine.renderer.debugger.debug;
-            }
-        }
-        public void Start () {
 
-        }
-        public void Update () {
-            //int bytesPerPixel = 4;
-            //if (file.Video.TryGetNextFrame(frameBufferRaw)) {
+        public override void Update () {
             if (file.Video.TryGetNextFrame(bufferRaw_bytes)) {
                 BufferBytesToPixels(bufferRaw_bytes, bufferRaw, bpp);
                 ResizeBufferPixels(bufferRaw, bufferLowRes, average: true);
 
-                if (engine.renderer.framesTotal % 10 == 0) {
-                    string path = @$"D:/temp/frame{engine.renderer.framesTotal/10}.png";
+                if (Engine.Renderer.framesTotal % 10 == 0) {
+                    string path = @$"D:/temp/frame{Engine.Renderer.framesTotal/10}.png";
                     //SaveFrame(frameBufferRaw, videoWidth, videoHeight, path);
                     //SaveFrame(bufferLowRes, path);
                 }
 
-                if (engine.renderer.forceAscii) {
-                    engine.renderer.VideoToAscii(bufferLowRes);
+                if (Engine.Renderer.forceAscii) {
+                    Engine.Renderer.VideoToAscii(bufferLowRes);
                 } else {
-                    engine.renderer.VideoToArrays(bufferLowRes);
+                    Engine.Renderer.VideoToArrays(bufferLowRes);
                 }
             } else {
-                engine.engineWork = false;
+                Engine.instance.engineWork = false;
                 //Environment.Exit(0);
             }
         }
-        public void UpdateSkip () {
+        public override void UpdateSkip () {
             if (!file.Video.TryGetNextFrame(bufferRaw_bytes)) {
                 /// <> <ch> to handle broken frame
-                engine.engineWork = false;
-                Environment.Exit(56);
+                Engine.instance.engineWork = false;
+                Environment.Exit(200);
             }
         }
 
@@ -197,11 +182,16 @@ namespace ConsoleRenderer {
 
 
 
-        public void Exit () {
-            //outputDevice.Stop();
-            //engine.isSelfEnd = true;
+        /*public override void Keys () {
+            if (Input.GetKeyDown('Q')) {
+                //engine.Menu();
+            }
+            if (Input.GetKeyDown('X')) {
+                Renderer.Debugger.debug = !Renderer.Debugger.debug;
+            }
+        }*/
 
-        }
+
 
     }
 }

@@ -4,40 +4,26 @@ using System.Linq;
 
 
 namespace ConsoleRenderer {
-    public class Game {
+    public abstract class Game : ConsoleGame {
 
-        public Engine engine;
-        public Renderer renderer;
-
-        public Game (Engine engine, int height, int width, Dictionary<int, ConsoleColor> colors) {
-            engine.state = States.game;
-            engine.renderer = new Renderer(height, 2*width, colors);
-            
-            this.engine = engine;
-            //renderer = engine.renderer;
+        public Game (int height, int width, Dictionary<int, ConsoleColor> colors) {
+            Engine.instance.state = EngineStates.Game;
+            Engine.Renderer = new Renderer(height, 2*width, colors);
+            Engine.Renderer.videoFrameBuffer = new Pixel[height, width];
+            Engine.Renderer.videoFrameBufferGs = new Pixel[height, width];
         }
 
 
 
-        public void Keys () {
+        
+
+
+
+        /*public override void Keys () {
             if (Input.GetKeyDown('Q')) {
-                engine.Menu();
+                //engine.Menu();
             }
-
-        }
-        public void Start () {
-
-        }
-        public void Update () {
-
-        }
-        public void UpdateSkip () {
-
-        }
-        public void Exit () {
-
-        }
-
+        }*/
 
     }
 }

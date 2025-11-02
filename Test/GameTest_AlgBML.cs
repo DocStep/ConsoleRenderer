@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ConsoleRenderer;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,38 +9,45 @@ using System.Threading.Tasks;
 #pragma warning disable CA1416
 #pragma warning disable CS8618
 namespace Test {
-    public class AlgBML {
+    public class GameTest_AlgBML : Game {
+
+        public GameTest_AlgBML (int height, int width, Dictionary<int, ConsoleColor> colors) : 
+            base(height, width, colors) {
+            arr = new int[height, width];
+            arrBuffer = new int[height, width];
+            this.height = height;
+            this.width = width;
+            Engine.fpsMax = 10000;
+        }
+
 
         int[,] arr, arrBuffer;
         float p = 0.5f;
         float q = 0.05f;
+        int height;
+        int width;
 
-        public int[,] Start (int[,] arr) {
-            this.arr = arr;
-            arrBuffer = new int[arr.GetLength(0), arr.GetLength(1)];
-            for (int y = 0; y < arr.GetLength(0); y++)
-                for (int x = 0; x < arr.GetLength(1); x++)
+
+        public override void Init () {
+            for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
                     arr[y, x] = new Random().NextDouble() < p ? (new Random().Next(2) == 0 ? 1 : 2) : 0;
             Array.Copy(arr, arrBuffer, arr.Length);
-
-            return arr;
-        }
-        public int[,] Start (int[,] arr, float p, float q) {
-            this.p = p;
-            this.q = q;
-            return Start(arr);
         }
 
-
-        public int[,] Update () {
-            arr = new int[arr.GetLength(0), arr.GetLength(1)];
+        public override void Update () {
+            lib.ArrayFill(arr, 0);
             Type1();
             Type2();
             Swap();
             //if (arr.Length != arrBuffer.Length) arrBuffer = new int[arr.GetLength(0), arr.GetLength(1)];
             Array.Copy(arr, arrBuffer, arr.Length);
-            return arr;
+
+            lib.ArrayToDoubled(arr, Engine.Renderer.arrCellColor);
         }
+
+
+
 
         void Type1 () {
             for (int i = 0; i < arr.GetLength(0); i++) {

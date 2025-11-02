@@ -6,8 +6,8 @@ using static ConsoleRenderer.DefaultValues;
 namespace ConsoleRenderer {
     public class MenuCanvas {
 
-        public Engine engine;
-        public Input input;
+        //public Engine engine;
+        //public Input input;
         //public Renderer renderer;
 
         public Menu menuActive, menuMain, menuVideo, menuVideoFromText, menuGame;
@@ -15,20 +15,19 @@ namespace ConsoleRenderer {
         public string path = "";
         public int iter = 0;
 
-        public MenuCanvas (Engine engine) {
-            engine.state = States.menu;
-            engine.renderer = new Renderer(40, 10, DefaultValues.Colors2);
-            engine.renderer.debugger.state = engine.state.ToString();
-            engine.nextIterTime = DateTime.Now.Ticks + (long)(1f/engine.fpsMax*TimeSpan.TicksPerSecond);
+        public MenuCanvas () {
+            Engine.instance.state = EngineStates.Menu;
 
-            this.engine = engine;
-            input = this.engine.input;
-            //renderer = engine.renderer;
+            Engine.Renderer = new Renderer(40, 10, DefaultValues.Colors2);
+            //Renderer.Debugger.state = engine.state.ToString();
+            Engine.instance.nextIterTime = DateTime.Now.Ticks + (long)(1f/Engine.fpsMax*TimeSpan.TicksPerSecond);
+
+            //input = engine.input;
 
             Init();
         }
         void Init () {
-            menuMain = new Menu("MENU", true, engine.renderer);
+            /*menuMain = new Menu("MENU", true, engine.renderer);
             menuMain.Add("Video", menuVideo, () => {
                 //menuActive = menuVideo;
                 //engine.Video(@"D:/temp/apple.mp4", 15, DefaultValues.colorsGs, false);
@@ -55,7 +54,8 @@ namespace ConsoleRenderer {
                 //engine.engineWork = false;
                 engine.appWork = false;
                 //engine.ExitThreadControl();
-            });
+            });*/
+
             //menuMain.Add("Animation from text", null, () => {
             //    new VideoFromText(engine, @"D:/DG2HeroAnimation.txt", 60, 24, 24);
             //});
@@ -91,7 +91,7 @@ namespace ConsoleRenderer {
                 menuMain.Select(menuMain.selected + 1);
             }
             if (Input.GetKeyDown('X')) {
-                engine.renderer.debugger.debug = !engine.renderer.debugger.debug;
+                Renderer.Debugger.debug = !Renderer.Debugger.debug;
             }
 
             if (Input.GetKeyDown('Q')) {
@@ -101,15 +101,14 @@ namespace ConsoleRenderer {
                 SelectedAction();
             }
         }
-        public void Start () {
 
-        }
+
         public void Update () {
             iter++;
             menuActive.Write();
 
 
-            if (engine.state == States.menu) ProcessLoadingSymbol();
+            if (Engine.instance.state == EngineStates.Menu) ProcessLoadingSymbol();
         }
         public void UpdateSkip () {
             iter++;
@@ -117,7 +116,6 @@ namespace ConsoleRenderer {
         public void Exit () {
 
         }
-
 
 
 
@@ -130,9 +128,9 @@ namespace ConsoleRenderer {
 
         int currloadingChar = 0;
         void ProcessLoadingSymbol () {
-            int frameDelta = (int)(engine.fpsMax/loading.Length/2);
+            int frameDelta = (int)(Engine.fpsMax/loading.Length/2);
             if (iter % frameDelta == 0) currloadingChar++;
-            engine.renderer.Write(loading[currloadingChar % loading.Length].ToString(), menuActive.selected+2, 2, 0, 1, false);
+            Engine.Renderer.Write(loading[currloadingChar % loading.Length].ToString(), menuActive.selected+2, 2, 0, 1, false);
         }
 
     }
