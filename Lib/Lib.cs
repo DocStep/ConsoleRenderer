@@ -4,7 +4,7 @@ using System.Linq;
 
 
 namespace ConsoleRenderer {
-    public class lib {
+    public class Lib {
 
         public static int[,] ArrayToHalf (int[,] array, int[,] halfed, bool pickFirstSymbol) {
             int length0 = array.GetLength(0);

@@ -3,7 +3,13 @@ using System.Collections.Generic;
 
 
 namespace ConsoleRenderer {
-    public class Menu : ConsoleGame {
+    public class Menu {
+        public Menu (string name, bool main) {
+            this.name = name;
+            this.main = main;
+
+            Renderer.Write(name, 0, 2, 1, 0, false);
+        }
 
         public class Line {
             public Line (string name, Menu menu, Action action) {
@@ -15,15 +21,6 @@ namespace ConsoleRenderer {
             public string name;
             public Menu menu;
             public Action action;
-        }
-
-        //Renderer renderer;
-
-        public Menu (string name, bool main) {
-            this.name = name;
-            this.main = main;
-
-            Engine.Renderer.Write(name, 0, 2, 1, 0, false);
         }
 
 
@@ -46,21 +43,21 @@ namespace ConsoleRenderer {
 
         public void Select (int index) {
             index = Math.Clamp(index, 0, lines.Count-1);
-            if (0 <= selected) Engine.Renderer.Write(lines[selected].name, selected+2, 0, 1, 0, false);
-            Engine.Renderer.Write(lines[index].name, index+2, 0, 0, 1, false);
+            if (0 <= selected) Renderer.Write(lines[selected].name, selected+2, 0, 1, 0, false);
+            Renderer.Write(lines[index].name, index+2, 0, 0, 1, false);
             selected = index;
         }
 
         public void Write () {
-            Engine.Renderer.Write(name, 0, 2, 1, 0, false);
+            Renderer.Write(name, 0, 2, 1, 0, false);
             for (int i = 0; i < lines.Count; i++) {
                 if (i == selected) {
-                    Engine.Renderer.Write(lines[i].name, i+2, 0, 0, 1, false);
+                    Renderer.Write(lines[i].name, i+2, 0, 0, 1, false);
                 } else {
-                    Engine.Renderer.Write(lines[i].name, i+2, 0, 1, 0, false);
+                    Renderer.Write(lines[i].name, i+2, 0, 1, 0, false);
                 }
             }
-            Engine.Renderer.Write(back.name, lines.Count+3, 0, 1, 0, false);
+            Renderer.Write(back.name, lines.Count+3, 0, 1, 0, false);
         }
 
     }

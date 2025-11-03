@@ -13,10 +13,19 @@ namespace Test {
 
         public GameTest_AlgCircle (int height, int width, Dictionary<int, ConsoleColor> colors) : 
             base(height, width, colors) {
-            arr = new int[height, width];
+            Engine.fpsMax = 10000;
             this.height = height;
             this.width = width;
-            Engine.fpsMax = 10000;
+
+            arr = new int[height, width];
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    arr[y, x] = 0;
+                    if (Math.Pow(x - 0.5f*width, 2) + Math.Pow(y - 0.5f*height, 2) <
+                        (int)Math.Pow(0.5f*r*Math.Min(height, width), 2))
+                        arr[y, x] = 1;
+                }
+            }
         }
 
 
@@ -28,7 +37,7 @@ namespace Test {
         int width;
 
 
-        public override void Init () {
+        /*public override void Init () {
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     arr[y, x] = 0;
@@ -37,7 +46,7 @@ namespace Test {
                         arr[y, x] = 1;
                 }
             }
-        }
+        }*/
 
         public override void Update () {
             iter++;
@@ -53,7 +62,7 @@ namespace Test {
                 }
             }
 
-            lib.ArrayToDoubled(arr, Engine.Renderer.arrCellColor);
+            Lib.ArrayToDoubled(arr, Renderer.arrCellColor);
         }
 
     }

@@ -1,60 +1,62 @@
-﻿using System;
+﻿using ConsoleRenderer;
+using System;
 using System.Collections.Generic;
-using static ConsoleRenderer.DefaultValues;
 
 
-namespace ConsoleRenderer {
-    public class MenuCanvas {
+namespace Test {
+    public class MenuCanvas : Scene {
+        public MenuCanvas () {
+            Engine.state = EngineStates.Menu;
 
-        //public Engine engine;
-        //public Input input;
-        //public Renderer renderer;
+            Renderer.Init(10, 40, DefaultValues.Colors2);
+            Engine.nextIterTime = DateTime.Now.Ticks + (long)(1f/Engine.fpsMax*TimeSpan.TicksPerSecond);
+
+            Init();
+        }
 
         public Menu menuActive, menuMain, menuVideo, menuVideoFromText, menuGame;
         public List<Menu> list = new List<Menu>();
         public string path = "";
         public int iter = 0;
 
-        public MenuCanvas () {
-            Engine.instance.state = EngineStates.Menu;
 
-            Engine.Renderer = new Renderer(40, 10, DefaultValues.Colors2);
-            //Renderer.Debugger.state = engine.state.ToString();
-            Engine.instance.nextIterTime = DateTime.Now.Ticks + (long)(1f/Engine.fpsMax*TimeSpan.TicksPerSecond);
-
-            //input = engine.input;
-
-            Init();
-        }
-        void Init () {
-            /*menuMain = new Menu("MENU", true, engine.renderer);
-            menuMain.Add("Video", menuVideo, () => {
+        public void Init () {
+            menuMain = new Menu("MENU", true);
+            menuMain.Add("Video", menuVideo, (Action)(() => {
+                SceneManager.Current = new Video(@"G:/temp/apple.mp4", pixelsPerCell: 12, colors: DefaultValues.Colors4, useAscii: false);
+            }));
+            menuMain.Add("Video From Text", menuVideo, (Action)(() => {
+                SceneManager.Current = new VideoFromText(@"G:/temp/DG2HeroAnimation.txt", 24, 60, 24);
                 //menuActive = menuVideo;
-                //engine.Video(@"D:/temp/apple.mp4", 15, DefaultValues.colorsGs, false);
-                engine.Video(@"D:/temp/apple.mp4", 20, DefaultValues.Colors4, false);
-            });
-            menuMain.Add("Video From Text", menuVideo, () => {
-                engine.VideoFromText(@"D:/DG2HeroAnimation.txt", 60, 24, 24);
-
-                //menuActive = menuVideo;
-            });
-            menuMain.Add("Game", menuVideo, () => {
+            }));
+            menuMain.Add("Game", menuVideo, (Action)(() => {
                 //menuActive = menuVideo;
 
-                engine.Game(60, 30, new Dictionary<int, ConsoleColor>() {
+                /*engine.Game(60, 30, new Dictionary<int, ConsoleColor>() {
                         { -1, ConsoleColor.DarkGray },
                         { 0, ConsoleColor.Black },
                         { 1, ConsoleColor.Cyan },
                         { 2, ConsoleColor.Magenta },
                         { 3, ConsoleColor.Green },
                         { 4, ConsoleColor.DarkYellow },
-                    });
-            });
+                    });*/
+
+                Dictionary<int, ConsoleColor> colors = new Dictionary<int, ConsoleColor>() {
+                    { -1, ConsoleColor.DarkGray },
+                    { 0, ConsoleColor.Black },
+                    { 1, ConsoleColor.Cyan },
+                    { 2, ConsoleColor.Magenta },
+                    { 3, ConsoleColor.Green },
+                    { 4, ConsoleColor.DarkYellow },
+                };
+                SceneManager.Current = new GameTest_AlgBML(30, 30, colors: colors);
+            }));
             menuMain.AddBack("Quit", null, () => {
                 //engine.engineWork = false;
-                engine.appWork = false;
+                //engine.appWork = false;
+                Engine.appWork = false;
                 //engine.ExitThreadControl();
-            });*/
+            });
 
             //menuMain.Add("Animation from text", null, () => {
             //    new VideoFromText(engine, @"D:/DG2HeroAnimation.txt", 60, 24, 24);
@@ -83,7 +85,7 @@ namespace ConsoleRenderer {
         }
 
 
-        public void Keys () {
+        public override void Keys () {
             if (Input.GetKeyDown('W')) {
                 menuMain.Select(menuMain.selected - 1);
             }
@@ -91,7 +93,7 @@ namespace ConsoleRenderer {
                 menuMain.Select(menuMain.selected + 1);
             }
             if (Input.GetKeyDown('X')) {
-                Renderer.Debugger.debug = !Renderer.Debugger.debug;
+                RendererDebugger.debug = !RendererDebugger.debug;
             }
 
             if (Input.GetKeyDown('Q')) {
@@ -103,20 +105,16 @@ namespace ConsoleRenderer {
         }
 
 
-        public void Update () {
+        public override void Update () {
             iter++;
             menuActive.Write();
 
-
-            if (Engine.instance.state == EngineStates.Menu) ProcessLoadingSymbol();
+            //if (Engine.instance.state == EngineStates.Menu) 
+            ProcessLoadingSymbol();
         }
-        public void UpdateSkip () {
+        public override void UpdateSkip () {
             iter++;
         }
-        public void Exit () {
-
-        }
-
 
 
         public void SelectedAction () {
@@ -128,9 +126,9 @@ namespace ConsoleRenderer {
 
         int currloadingChar = 0;
         void ProcessLoadingSymbol () {
-            int frameDelta = (int)(Engine.fpsMax/loading.Length/2);
+            int frameDelta = (int)(Engine.fpsMax/DefaultValues.loading.Length/2);
             if (iter % frameDelta == 0) currloadingChar++;
-            Engine.Renderer.Write(loading[currloadingChar % loading.Length].ToString(), menuActive.selected+2, 2, 0, 1, false);
+            Renderer.Write(DefaultValues.loading[currloadingChar % DefaultValues.loading.Length].ToString(), menuActive.selected+2, 2, 0, 1, false);
         }
 
     }

@@ -6,16 +6,14 @@ using System.Threading.Tasks;
 
 
 namespace ConsoleRenderer {
-    public class Scene {
+    public static class SceneManager {
+
+        public static Scene Current;
+        public static List<Scene> Scenes = new List<Scene>();
 
 
 
-        public void SceneLoaded () {
 
-        }
-        public void SceneExiting () {
-
-        }
 
     }
 }

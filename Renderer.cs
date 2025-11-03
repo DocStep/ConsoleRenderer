@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -12,29 +13,13 @@ using System.Threading;
 #pragma warning disable CA1416
 //#pragma warning disable CS8618
 namespace ConsoleRenderer {
+    public static class Renderer { /// <> Uses grey-scale yet
+        
+        public static void Init (int height, int width, Dictionary<int, ConsoleColor> colors = null) {
+            Renderer.colors = colors != null ? colors : DefaultValues.Colors2;
 
-    /// <> Uses grey-scale yet
-    public class Renderer {
-
-        public static RendererDebugger Debugger;
-
-        public Renderer () {
-            Renderer.Debugger = new RendererDebugger(this);
-        }
-        public Renderer (int height, int width, Dictionary<int, ConsoleColor> colors) {
-            Renderer.Debugger = new RendererDebugger(this);
-            this.colors = colors;
-            Init(height, width);
-        }
-        public Renderer (int height, int width) {
-            Renderer.Debugger = new RendererDebugger(this);
-            colors = DefaultValues.Colors2;
-            Init(height, width);
-        }
-
-        public void Init (int height, int width) {
-            this.height = height;
-            this.width = width;
+            Renderer.height = height;
+            Renderer.width = width;
             widthVideo = width/2;
 
             arrText = new char[height, width];
@@ -44,9 +29,9 @@ namespace ConsoleRenderer {
             pixelsGs = new float[height, width/2];
 
             int i_colorDef = colors.ElementAt(0).Key;
-            arrText = lib.ArrayFill(arrText, ' ');
-            arrTextColor = lib.ArrayFill(arrTextColor, i_colorDef);
-            arrCellColor = lib.ArrayFill(arrCellColor, i_colorDef);
+            arrText = Lib.ArrayFill(arrText, ' ');
+            arrTextColor = Lib.ArrayFill(arrTextColor, i_colorDef);
+            arrCellColor = Lib.ArrayFill(arrCellColor, i_colorDef);
             //videoCellsGs = Simple.ArrayFill(videoCellsGs, 0);
 
             bufferText = new char[height, width];
@@ -58,17 +43,18 @@ namespace ConsoleRenderer {
             InitCanvas(height, width);
             EmptyCanvas(height, width);
 
-            Renderer.Debugger.state = Engine.instance.state.ToString();
-            Renderer.Debugger.framesQueue = 0;
+            RendererDebugger.state = Engine.state.ToString();
+            RendererDebugger.framesQueue = 0;
+            //Renderer.RendererDebugger.threadsCount = Process.GetCurrentProcess().Threads.Count - threadsStartCount;
         }
 
-        void InitCanvas (int height, int width) {
+        static void InitCanvas (int height, int width) {
             Console.CursorVisible = false;
             Console.SetWindowSize(width, height);
             Console.SetBufferSize(width, height);
             Console.SetWindowSize(width, height);
         }
-        void EmptyCanvas (int height, int width) {
+        static void EmptyCanvas (int height, int width) {
             Console.SetCursorPosition(0, 0);
             Console.ForegroundColor = DefaultValues.c_Text;
             Console.BackgroundColor = DefaultValues.c_Cell;
@@ -82,35 +68,35 @@ namespace ConsoleRenderer {
 
 
 
-        public Dictionary<int, ConsoleColor> colors = new Dictionary<int, ConsoleColor>() { [0] = ConsoleColor.Black };
-        public List<int> i_colorsGs = new List<int>();
-        public string title = "Renderer Engine";
+        public static Dictionary<int, ConsoleColor> colors = new Dictionary<int, ConsoleColor>() { [0] = ConsoleColor.Black };
+        public static List<int> i_colorsGs = new List<int>();
+        public static string title = "Renderer Engine";
 
-        public bool isPassing;
-        public int height;
-        public int width;
-        public int widthVideo;
-        public int framesTotal = 0;
-        public bool forceAscii = false;
-        public string textAscii = "";
+        public static bool isPassing;
+        public static int height;
+        public static int width;
+        public static int widthVideo;
+        public static int framesTotal = 0;
+        public static bool forceAscii = false;
+        public static string textAscii = "";
 
-        public char[,] arrText;
-        public int[,] arrTextColor;
-        public int[,] arrCellColor;
+        public static char[,] arrText;
+        public static int[,] arrTextColor;
+        public static int[,] arrCellColor;
 
-        public char[,] bufferText;
-        public int[,] bufferTextColor;
-        public int[,] bufferCellColor;
+        public static char[,] bufferText;
+        public static int[,] bufferTextColor;
+        public static int[,] bufferCellColor;
 
-        public Pixel[,] videoFrameBuffer;
-        public Pixel[,] videoFrameBufferGs;
+        public static Pixel[,] cellFrameBuffer;
+        public static Pixel[,] cellFrameBufferGs;
 
 
 
-        public void Pass () {
+        public static void Pass () {
             isPassing = true;
             framesTotal++;
-            Renderer.Debugger.DebugReset();
+            RendererDebugger.DebugReset();
 
             if (forceAscii) {
                 SetCursor(0, 0);
@@ -122,33 +108,33 @@ namespace ConsoleRenderer {
             }
 
 
-            Renderer.Debugger.DebugOut();
+            RendererDebugger.DebugOut();
 
             ResetLayers();
             isPassing = false;
         }
 
-        void ResetLayers () {
+        static void ResetLayers () {
             Array.Copy(arrText, bufferText, arrText.Length);
             Array.Copy(arrTextColor, bufferTextColor, arrTextColor.Length);
             Array.Copy(arrCellColor, bufferCellColor, arrCellColor.Length);
 
-            arrText = lib.ArrayFill(arrText, ' ');
+            arrText = Lib.ArrayFill(arrText, ' ');
             int colorDef = i_getColorDef();
-            arrTextColor = lib.ArrayFill(arrTextColor, colorDef);
-            arrCellColor = lib.ArrayFill(arrCellColor, colorDef);
+            arrTextColor = Lib.ArrayFill(arrTextColor, colorDef);
+            arrCellColor = Lib.ArrayFill(arrCellColor, colorDef);
         }
-        public int i_getColorDef () {
+        public static int i_getColorDef () {
             if (colors.Count == 0) return -1;
             return colors.ElementAt(0).Key;
         }
 
 
-        public Pixel[,] pixels;
-        public float[,] pixelsGs;
-        public float blurPower = 0;
+        public static Pixel[,] pixels;
+        public static float[,] pixelsGs;
+        public static float blurPower = 0;
 
-        void VideoFramePixels (Pixel[,] frame) {
+        static void VideoFramePixels (Pixel[,] frame) {
             for (int top = 0; top < height; top++) {
                 for (int left = 0; left < widthVideo; left++) {
                     Pixel pixel = frame[top, left];
@@ -158,7 +144,7 @@ namespace ConsoleRenderer {
             }
         }
 
-        public void VideoToArrays (Pixel[,] frame) {
+        public static void VideoToArrays (Pixel[,] frame) {
             if (0 < blurPower) frame = VideoFrameBlur(frame, blurPower);
 
             VideoFramePixels(frame);
@@ -178,13 +164,13 @@ namespace ConsoleRenderer {
                 }
             }
         }
-        public void VideoToAscii (Pixel[,] frame) {
+        public static void VideoToAscii (Pixel[,] frame) {
             VideoFramePixels(frame);
 
             if (0 < blurPower)  VideoFrameBlur(frame, blurPower);
 
             textAscii = "";
-            int width = (int)(0.5*this.width);
+            int width = (int)(0.5*Renderer.width);
             for (int top = 0; top < height; top++) {
                 for (int left = 0; left < width; left++) {
                     float greyScale = pixelsGs[top, left];
@@ -197,7 +183,7 @@ namespace ConsoleRenderer {
             }
         }
 
-        Pixel[,] VideoFrameBlur (Pixel[,] frame, float power) {
+        static Pixel[,] VideoFrameBlur (Pixel[,] frame, float power) {
             int radius = Math.Max(1, (int)power);
             float strength = 1f/((2*radius + 1)*(2*radius + 1));
 
@@ -217,18 +203,18 @@ namespace ConsoleRenderer {
                         }
                     }
 
-                    videoFrameBufferGs[top, left].R = (byte)(strength*r);
-                    videoFrameBufferGs[top, left].G = (byte)(strength*g);
-                    videoFrameBufferGs[top, left].B = (byte)(strength*b);
+                    cellFrameBufferGs[top, left].R = (byte)(strength*r);
+                    cellFrameBufferGs[top, left].G = (byte)(strength*g);
+                    cellFrameBufferGs[top, left].B = (byte)(strength*b);
                 }
             }
 
             //frame = videoFrameBufferGs;
-            return frame = videoFrameBufferGs;
+            return frame = cellFrameBufferGs;
         }
 
 
-        void AsciiFromString (int top, int left, float grayScale, float treshold) {
+        static void AsciiFromString (int top, int left, float grayScale, float treshold) {
             int idx = (int)(grayScale*colors.Count);
             int i_color = colors.ElementAt(idx).Key;
             arrCellColor[top, 2*left] = i_color;
@@ -252,7 +238,7 @@ namespace ConsoleRenderer {
                 }
             }
         }
-        void AsciiFromDictionary (int top, int left, float grayScale, float treshold) {
+        static void AsciiFromDictionary (int top, int left, float grayScale, float treshold) {
             int idx = (int)(grayScale*colors.Count());
             int i_color = colors.ElementAt(idx).Key;
             arrCellColor[top, 2*left] = i_color;
@@ -295,7 +281,7 @@ namespace ConsoleRenderer {
 
 
         /* Text To Buffer */
-        public void Write (string text, int top, int left, int colorText, int colorCell, bool trimEndLine) {
+        public static void Write (string text, int top, int left, int colorText, int colorCell, bool trimEndLine) {
             if (trimEndLine) text = text.Substring(0, arrCellColor.GetLength(1)-left);
 
             while (0 < text.Length) {
@@ -339,12 +325,12 @@ namespace ConsoleRenderer {
 
 
         /// Full Cells Render
-        public void CellsFull () {
+        public static void CellsFull () {
             CellsFullGroups();
             WriteChangeSet(groupsToWriteFull);
         }
-        List<CellDiffPos> groupsToWriteFull = new List<CellDiffPos>();
-        void CellsFullGroups () {
+        static List<CellDiffPos> groupsToWriteFull = new List<CellDiffPos>();
+        static void CellsFullGroups () {
             groupsToWriteFull.Clear();
             int prevSymbolWritenToGroupIndex = -1;
             for (int top = 0; top < height; top++)
@@ -376,12 +362,12 @@ namespace ConsoleRenderer {
 
 
         /// OverWrite Cells Render
-        public void CellsOverwrite () {
+        public static void CellsOverwrite () {
             CellsOverwriteGroups();
             WriteChangeSet(groupsToWriteOver);
         }
-        List<CellDiffPos> groupsToWriteOver = new List<CellDiffPos>();
-        void CellsOverwriteGroups () {
+        static List<CellDiffPos> groupsToWriteOver = new List<CellDiffPos>();
+        static void CellsOverwriteGroups () {
             groupsToWriteOver.Clear();
             int prevSymbolWritenToGroupIndex = -1;
             for (int top = 0; top < height; top++)
@@ -425,7 +411,7 @@ namespace ConsoleRenderer {
 
 
 
-        void WriteChangeSet (List<CellDiffPos> groups) {
+        static void WriteChangeSet (List<CellDiffPos> groups) {
             int groupsCount = groups.Count;
             for (int iColor = 0; iColor < groupsCount; iColor++) {
                 CellDiffPos group = groups[iColor];
@@ -436,69 +422,69 @@ namespace ConsoleRenderer {
                     DrawCellsChange(group.pos[iText]);
             }
         }
-        void DrawCellsChange (Pos pos) {
+        static void DrawCellsChange (Pos pos) {
             SetCursor(pos.top, pos.left);
             Write(pos.text);
         }
-        string cellText (int top, int left) {
+        static string cellText (int top, int left) {
             return string.Empty + arrText[top, left];
         }
 
 
 
         /* Simple */
-        int colorCell = 0;
-        int colorText = 0;
-        int cursorTop = 0;
-        int cursorLeft = 0;
-        public void Write (string s) {
+        static int colorCell = 0;
+        static int colorText = 0;
+        static int cursorTop = 0;
+        static int cursorLeft = 0;
+        public static void Write (string s) {
             Console.Write(s);
-            Debugger.Write();
+            RendererDebugger.Write();
         }
-        public void WriteLine (string s) {
+        public static void WriteLine (string s) {
             Console.WriteLine(s);
-            Debugger.Write();
+            RendererDebugger.Write();
         }
-        public void SetColorCell (ConsoleColor colorCell) {
+        public static void SetColorCell (ConsoleColor colorCell) {
             int colorKey = colors.First(x => x.Value == colorCell).Key;
-            if (this.colorCell != colorKey) {
-                this.colorCell = colorKey;
+            if (Renderer.colorCell != colorKey) {
+                Renderer.colorCell = colorKey;
                 Console.BackgroundColor = colorCell;
-                Debugger.SetColorCell();
+                RendererDebugger.SetColorCell();
             }
         }
-        public void SetColorCell (int colorCell) {
-            if (this.colorCell != colorCell) {
-                this.colorCell = colorCell;
+        public static void SetColorCell (int colorCell) {
+            if (Renderer.colorCell != colorCell) {
+                Renderer.colorCell = colorCell;
                 Console.BackgroundColor = colors.First(x => x.Key == colorCell).Value;
                 //Console.BackgroundColor = colors[colorCell];
-                Debugger.SetColorCell();
+                RendererDebugger.SetColorCell();
             }
         }
         // add "space" string check
-        public void SetColorText (ConsoleColor colorText) {
+        public static void SetColorText (ConsoleColor colorText) {
             int colorKey = colors.First(x => x.Value == colorText).Key;
-            if (this.colorText != colorKey) {
-                this.colorText = colorKey;
+            if (Renderer.colorText != colorKey) {
+                Renderer.colorText = colorKey;
                 Console.ForegroundColor = colorText;
-                Debugger.SetColorText();
+                RendererDebugger.SetColorText();
             }
         }
-        public void SetColorText (int colorText) {
-            if (this.colorText != colorText) {
-                this.colorText = colorText;
+        public static void SetColorText (int colorText) {
+            if (Renderer.colorText != colorText) {
+                Renderer.colorText = colorText;
                 Console.ForegroundColor = colors.First(x => x.Key == colorText).Value;
-                Debugger.SetColorText();
+                RendererDebugger.SetColorText();
             }
         }
-        public void SetCursor (int top, int left) {
+        public static void SetCursor (int top, int left) {
             if (top != Console.GetCursorPosition().Top || left != Console.GetCursorPosition().Left) {
                 cursorTop = Console.GetCursorPosition().Top;
                 cursorLeft = Console.GetCursorPosition().Left;
                 //Console.SetWindowSize(width, height);
                 //if (left < Console.WindowWidth && left < Console.WindowHeight) 
                 Console.SetCursorPosition(left, top);
-                Debugger.SetCursor();
+                RendererDebugger.SetCursor();
             }
         }
 

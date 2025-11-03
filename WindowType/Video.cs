@@ -17,10 +17,9 @@ using System.Threading.Channels;
 
 
 namespace ConsoleRenderer {
-    public class Video : ConsoleGame {
-
+    public class Video : Scene {
         public Video (string path, int pixelsPerCell, Dictionary<int, ConsoleColor> colors, bool useAscii) {
-            Engine.instance.state = EngineStates.Video;
+            Engine.state = EngineStates.Video;
 
             FFmpegLoader.FFmpegPath = @"D:\ffmpeg\bin";
 
@@ -36,13 +35,14 @@ namespace ConsoleRenderer {
             bpp = 3;
             Engine.fpsMax = file.Video.Info.AvgFrameRate;
 
-            Engine.Renderer = new Renderer(videoHeightLowRes, 2*videoWidthLowRes, colors);
-            Engine.Renderer.title = Path.GetFileName(path);
-            Engine.Renderer.forceAscii = useAscii;
+            Renderer.Init(videoHeightLowRes, 2*videoWidthLowRes, colors);
+            //Engine.Renderer = new Renderer(videoHeightLowRes, 2*videoWidthLowRes, colors);
+            Renderer.title = Path.GetFileName(path);
+            Renderer.forceAscii = useAscii;
             //Engine.Renderer.debugger.framesQueue = 0;
             //engine.renderer.blurPower = 1f;
-            Engine.Renderer.videoFrameBuffer = new Pixel[videoHeightRaw, videoWidthRaw];
-            Engine.Renderer.videoFrameBufferGs = new Pixel[videoHeightRaw, videoWidthRaw];
+            Renderer.cellFrameBuffer = new Pixel[videoHeightRaw, videoWidthRaw];
+            Renderer.cellFrameBufferGs = new Pixel[videoHeightRaw, videoWidthRaw];
 
 
             bufferRaw_bytes = new byte[videoHeightRaw*videoWidthRaw*bpp];
@@ -56,12 +56,11 @@ namespace ConsoleRenderer {
                 outputDevice.Init(audioFile);
                 outputDevice.Volume = 0.1f;
                 outputDevice.Play();
-            } catch (Exception _) { }
+            } catch (Exception) { }
         }
 
 
         MediaFile file;
-        //Bitmap frame;
         byte[] bufferRaw_bytes;
         Pixel[,] bufferRaw;
         Pixel[,] bufferLowRes;
@@ -76,34 +75,31 @@ namespace ConsoleRenderer {
         int bpp;
 
 
-
-
-
         public override void Update () {
             if (file.Video.TryGetNextFrame(bufferRaw_bytes)) {
                 BufferBytesToPixels(bufferRaw_bytes, bufferRaw, bpp);
                 ResizeBufferPixels(bufferRaw, bufferLowRes, average: true);
 
-                if (Engine.Renderer.framesTotal % 10 == 0) {
-                    string path = @$"D:/temp/frame{Engine.Renderer.framesTotal/10}.png";
+                if (Renderer.framesTotal % 10 == 0) {
+                    string path = @$"D:/temp/frame{Renderer.framesTotal/10}.png";
                     //SaveFrame(frameBufferRaw, videoWidth, videoHeight, path);
                     //SaveFrame(bufferLowRes, path);
                 }
 
-                if (Engine.Renderer.forceAscii) {
-                    Engine.Renderer.VideoToAscii(bufferLowRes);
+                if (Renderer.forceAscii) {
+                    Renderer.VideoToAscii(bufferLowRes);
                 } else {
-                    Engine.Renderer.VideoToArrays(bufferLowRes);
+                    Renderer.VideoToArrays(bufferLowRes);
                 }
             } else {
-                Engine.instance.engineWork = false;
+                Engine.engineWork = false;
                 //Environment.Exit(0);
             }
         }
         public override void UpdateSkip () {
             if (!file.Video.TryGetNextFrame(bufferRaw_bytes)) {
                 /// <> <ch> to handle broken frame
-                Engine.instance.engineWork = false;
+                Engine.engineWork = false;
                 Environment.Exit(200);
             }
         }
@@ -182,14 +178,15 @@ namespace ConsoleRenderer {
 
 
 
-        /*public override void Keys () {
+        public override void Keys () {
             if (Input.GetKeyDown('Q')) {
                 //engine.Menu();
+                //Engine.ConsoleGame = new MenuCanvas();
             }
             if (Input.GetKeyDown('X')) {
-                Renderer.Debugger.debug = !Renderer.Debugger.debug;
+                RendererDebugger.debug = !RendererDebugger.debug;
             }
-        }*/
+        }
 
 
 
