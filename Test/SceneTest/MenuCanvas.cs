@@ -85,7 +85,7 @@ namespace Test {
         }
 
 
-        public override void Keys () {
+        public override void Inputs () {
             if (Input.GetKeyDown('W')) {
                 menuMain.Select(menuMain.selected - 1);
             }
@@ -105,14 +105,14 @@ namespace Test {
         }
 
 
-        public override void Update () {
+        public override void FixedUpdate () {
             iter++;
             menuActive.Write();
 
             //if (Engine.instance.state == EngineStates.Menu) 
             ProcessLoadingSymbol();
         }
-        public override void UpdateSkip () {
+        public override void FixedUpdate_Skip () {
             iter++;
         }
 

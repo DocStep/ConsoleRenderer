@@ -19,40 +19,40 @@ public enum EngineStates {
 namespace ConsoleRenderer {
     public static class Engine {
         public static void Init () {
-            //instance = this;
-            //Renderer = new Renderer();
             Input = new Input();
             threadsStartCount = Process.GetCurrentProcess().Threads.Count;
             nextIterTime = DateTime.Now.Ticks + (long)(1f/fpsMax*TimeSpan.TicksPerSecond);
 
-            th_Control = new Thread(ThreadControl);
-            //th_Engine = new Thread(ThreadEngine);
+            th_Control = new Thread(Thread_Control);
+            th_FixedUpdate = new Thread(Thread_FixedUpdate);
+            th_Update = new Thread(Thread_Update);
 
             RendererDebugger.threadsCount = Process.GetCurrentProcess().Threads.Count - threadsStartCount;
         }
         public static void Init (Scene scene) {
             Init();
             SceneManager.Current = scene;
-            //Renderer.Init(height, width);
         }
 
-        //public static Renderer renderer;
-
         public static Thread th_Control;
-        public static Thread th_Engine;
+        public static Thread th_FixedUpdate;
+        public static Thread th_Update;
+
         public static Input Input;
 
-        public static EngineStates state;
-        public static bool engineWork;
+        /// States
+        public static EngineStates state = EngineStates.none;
+        public static bool engineWork = true;
         public static bool appWork;
         public static int threadsStartCount;
         public static long nextIterTime;
-        public static int framesQueue = 0;
+        //public static int framesQueue = 0;
+        //public static bool fixedFrameEnded;
 
 
-        public static bool isEngineWorking;
-        public static bool isPassing;
-        public static bool isSelfEnd;
+        //public static bool isEngineWorking;
+        //public static bool isPassing;
+        //public static bool isSelfEnd;
 
         public static double fpsMax = 60;
 
@@ -60,77 +60,73 @@ namespace ConsoleRenderer {
         public static void Start () {
             if (SceneManager.Current == null) return;
             
-            th_Control.Start();
-            //th_Engine.Start();
-            ThreadEngine();
-        }
-        static void ThreadEngine () {
-            isEngineWorking = true;
             engineWork = true;
-
+            th_Control.Start();
+            th_FixedUpdate.Start();
+            th_Update.Start();
+            //Thread_FixedUpdate();
+        }
+        static void Thread_FixedUpdate () {
             while (engineWork) {
-                if (0 < framesQueue) {
-                    isPassing = true;
-
-                    // Frame skip
+                if (0 < RendererDebugger.framesQueue) {
+                    /// Frame skip
                     int skipped = 0;
-                    while (1 < framesQueue  && skipped < 10) {
-                        RendererDebugger.framesSkipped++;
-                        //skipped++;
-                        framesQueue--;
-                        SceneManager.Current?.UpdateSkip();
+                    while (1 < RendererDebugger.framesQueue && skipped < 10) {
+                        RendererDebugger.framesQueue--;
+                        RendererDebugger.fixedFramesSkipped++;
+                        SceneManager.Current?.FixedUpdate_Skip();
                     }
 
-                    // Frame
-                    framesQueue--;
-                    SceneManager.Current?.Update();
+                    /// Frame
+                    RendererDebugger.framesQueue--;
+                    SceneManager.Current?.FixedUpdate();
+                    RendererDebugger.fixedFramesTotal++;
 
-                    RendererDebugger.framesQueue = framesQueue;
-                    Renderer.Pass();
-                    isPassing = false;
+                    Renderer.needPass = true;
+                    if (Renderer.isPassing) {
+                        Renderer.shouldInterrupt = true;
+                    }
+
+                    //Renderer.Pass();
+
+
+                    Renderer.needPass = true;
+                    //Renderer.shouldInterrupt = Renderer.isPassing;
                 }
             }
-
-            ExitThreadEngine();
         }
-        static void ThreadControl () {
-            appWork = true;
+        static void Thread_Update () {
+            while (engineWork) {
+                if (Renderer.needPass) {
+                    Renderer.Pass();
+                }
+            }
+        }
+
+        static void Thread_Update_Interruption () {
+            while (engineWork) {
+                if (!Renderer.isPassing) {
+                    Renderer.Pass();
+                }
+            }
+        }
+
+        static void Thread_Control () {
+            //appWork = true;
             nextIterTime = DateTime.Now.Ticks;
-            while (appWork) {
-                SceneManager.Current?.Keys();
+            while (engineWork) {
+                SceneManager.Current?.Inputs();
 
                 if (DateTime.Now.Ticks >= nextIterTime + (long)(1f/fpsMax*TimeSpan.TicksPerSecond)) {
                     nextIterTime += (long)(1f/fpsMax*TimeSpan.TicksPerSecond);
-                    framesQueue++;
+                    RendererDebugger.framesQueue++;
                 }
             }
-
-            ExitThreadControl();
         }
 
 
 
 
-        static void ExitThreadEngine () {
-            engineWork = false;
-            state = EngineStates.none;
-
-            Console.ForegroundColor = DefaultValues.c_Text;
-            Console.BackgroundColor = DefaultValues.c_Cell;
-            Console.Clear();
-            Console.SetCursorPosition(0, 0);
-            //Console.Title = (Process.GetCurrentProcess().Threads.Count - threadsStartCount).ToString();
-            Console.Title = "ExitThread";
-
-            isEngineWorking = false;
-            //Thread.Sleep(1000);
-        }
-        static void ExitThreadControl () {
-            ExitThreadEngine();
-            appWork = false;
-            Console.WriteLine("Exiting...");
-            Thread.Sleep(200);
-        }
 
     }
 }

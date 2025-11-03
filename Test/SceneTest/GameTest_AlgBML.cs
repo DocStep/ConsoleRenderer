@@ -39,7 +39,7 @@ namespace Test {
             Array.Copy(arr, arrBuffer, arr.Length);
         }*/
 
-        public override void Update () {
+        public override void FixedUpdate () {
             Lib.ArrayFill(arr, 0);
             Type1();
             Type2();

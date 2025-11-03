@@ -31,7 +31,7 @@ namespace Test {
             }
         }*/
 
-        public override void Update () {
+        public override void FixedUpdate () {
             for (int i = 0; i < 10; i++) {
                 Renderer.Write("01..010001101......", 
                     rand.Next(Renderer.height), rand.Next(Renderer.width)+1, 2, 1, false);

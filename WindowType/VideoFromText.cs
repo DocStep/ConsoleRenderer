@@ -17,7 +17,7 @@ namespace ConsoleRenderer {
         string text = "";
 
 
-        public override void Update () {
+        public override void FixedUpdate () {
             text = "";
             for (int i = 0; i < Renderer.height; i++) {
                 text += sr.ReadLine() + (i < Renderer.height-1 ? "\n" : "");
@@ -30,7 +30,7 @@ namespace ConsoleRenderer {
         }
 
 
-        public override void Keys () {
+        public override void Inputs () {
             if (Input.GetKeyDown('Q')) {
                 //engine.Menu();
             }

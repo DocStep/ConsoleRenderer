@@ -18,7 +18,10 @@ namespace ConsoleRenderer {
         static int renderLatecy;
         public static string text = "";
 
+        public static int fixedFramesTotal = 0;
+        public static int framesTotal = 0;
         public static int framesQueue = 0;
+        public static int fixedFramesSkipped = 0;
         public static int framesSkipped = 0;
         public static void SetCursor () { cursorSets++; }
         public static void SetColorCell () { recolorsCell++; }
@@ -39,7 +42,8 @@ namespace ConsoleRenderer {
                 videoLatency += renderLatecy;
                 //Console.Title = (renderer.title.Length > 0 ? $"{renderer.title} " : "") +
                 Console.Title = $"{state} ({threadsCount}) " +
-                    $"[ fps:{fps,5} / fT:{Renderer.framesTotal,5} / fQ:{framesQueue,4} / fS:{framesSkipped,4} | " +
+                    $"[ fps:{fps,5} / (fF/f):({fixedFramesTotal,5}/{framesTotal,5}) / fQ:{framesQueue,4} " +
+                    $"/ fFS:{fixedFramesSkipped,4} / fS:{framesSkipped,4} |" +
                     $"rL/vL:{renderLatecy,4}/{videoLatency/1000,4} | w:{writes,5}; cC:{recolorsCell,5}; cT:{recolorsText,5}; c:{cursorSets,5} ] {text}";
             } else Console.Title = $"{Renderer.title}";
         }

@@ -22,12 +22,17 @@ namespace ConsoleRenderer {
         }
 
         /// <summary> Update frame </summary>
-        public virtual void UpdateSkip () {
+        public virtual void FixedUpdate () {
+
+        }
+
+        /// <summary> Update frame </summary>
+        public virtual void FixedUpdate_Skip () {
 
         }
 
         /// <summary> Inputs </summary>
-        public virtual void Keys () {
+        public virtual void Inputs () {
 
         }
 

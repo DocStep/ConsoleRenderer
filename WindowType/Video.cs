@@ -75,13 +75,13 @@ namespace ConsoleRenderer {
         int bpp;
 
 
-        public override void Update () {
+        public override void FixedUpdate () {
             if (file.Video.TryGetNextFrame(bufferRaw_bytes)) {
                 BufferBytesToPixels(bufferRaw_bytes, bufferRaw, bpp);
                 ResizeBufferPixels(bufferRaw, bufferLowRes, average: true);
 
-                if (Renderer.framesTotal % 10 == 0) {
-                    string path = @$"D:/temp/frame{Renderer.framesTotal/10}.png";
+                if (RendererDebugger.framesTotal % 10 == 0) {
+                    string path = @$"D:/temp/frame{RendererDebugger.framesTotal/10}.png";
                     //SaveFrame(frameBufferRaw, videoWidth, videoHeight, path);
                     //SaveFrame(bufferLowRes, path);
                 }
@@ -96,7 +96,7 @@ namespace ConsoleRenderer {
                 //Environment.Exit(0);
             }
         }
-        public override void UpdateSkip () {
+        public override void FixedUpdate_Skip () {
             if (!file.Video.TryGetNextFrame(bufferRaw_bytes)) {
                 /// <> <ch> to handle broken frame
                 Engine.engineWork = false;
@@ -178,7 +178,7 @@ namespace ConsoleRenderer {
 
 
 
-        public override void Keys () {
+        public override void Inputs () {
             if (Input.GetKeyDown('Q')) {
                 //engine.Menu();
                 //Engine.ConsoleGame = new MenuCanvas();
