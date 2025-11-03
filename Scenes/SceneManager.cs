@@ -5,15 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace ConsoleRenderer {
-    public static class SceneManager {
+namespace ConsoleRenderer;
 
-        public static Scene Current;
-        public static List<Scene> Scenes = new List<Scene>();
+public static class SceneManager {
 
-
-
+    public static Scene Current;
+    public static List<Scene> Scenes = new List<Scene>();
 
 
-    }
 }

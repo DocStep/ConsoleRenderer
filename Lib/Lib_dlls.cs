@@ -6,53 +6,51 @@ using System.Runtime.InteropServices;
 using System.Drawing;
 
 
-namespace ConsoleRenderer {
-    public static class Lib_dlls {
-        [DllImport("kernel32")]
-        public static extern bool SetConsoleIcon (IntPtr hIcon);
+namespace ConsoleRenderer;
 
-        /*public static bool SetConsoleIcon (Icon icon) {
-            return SetConsoleIcon(icon.Handle);
-        }*/
+public static class Lib_dlls {
+    [DllImport("kernel32")]
+    public static extern bool SetConsoleIcon (IntPtr hIcon);
 
-        [DllImport("kernel32")]
-        private extern static bool SetConsoleFont (IntPtr hOutput, uint index);
+    /*public static bool SetConsoleIcon (Icon icon) {
+        return SetConsoleIcon(icon.Handle);
+    }*/
 
-        private enum StdHandle {
-            OutputHandle = -11
-        }
+    [DllImport("kernel32")]
+    private extern static bool SetConsoleFont (IntPtr hOutput, uint index);
 
-        [DllImport("kernel32")]
-        private static extern IntPtr GetStdHandle (StdHandle index);
-
-        public static bool SetConsoleFont (uint index) {
-            return SetConsoleFont(GetStdHandle(StdHandle.OutputHandle), index);
-        }
-
-        [DllImport("kernel32")]
-        private static extern bool GetConsoleFontInfo (IntPtr hOutput, [MarshalAs(UnmanagedType.Bool)] bool bMaximize,
-            uint count, [MarshalAs(UnmanagedType.LPArray), Out] ConsoleFont[] fonts);
-
-        [DllImport("kernel32")]
-        private static extern uint GetNumberOfConsoleFonts ();
-
-        public static uint ConsoleFontsCount {
-            get {
-                return GetNumberOfConsoleFonts();
-            }
-        }
-
-        public static ConsoleFont[] ConsoleFonts {
-            get {
-                ConsoleFont[] fonts = new ConsoleFont[GetNumberOfConsoleFonts()];
-                if (fonts.Length > 0)
-                    GetConsoleFontInfo(GetStdHandle(StdHandle.OutputHandle), false, (uint)fonts.Length, fonts);
-                return fonts;
-            }
-        }
-
+    private enum StdHandle {
+        OutputHandle = -11
     }
 
+    [DllImport("kernel32")]
+    private static extern IntPtr GetStdHandle (StdHandle index);
+
+    public static bool SetConsoleFont (uint index) {
+        return SetConsoleFont(GetStdHandle(StdHandle.OutputHandle), index);
+    }
+
+    [DllImport("kernel32")]
+    private static extern bool GetConsoleFontInfo (IntPtr hOutput, [MarshalAs(UnmanagedType.Bool)] bool bMaximize,
+        uint count, [MarshalAs(UnmanagedType.LPArray), Out] ConsoleFont[] fonts);
+
+    [DllImport("kernel32")]
+    private static extern uint GetNumberOfConsoleFonts ();
+
+    public static uint ConsoleFontsCount {
+        get {
+            return GetNumberOfConsoleFonts();
+        }
+    }
+
+    public static ConsoleFont[] ConsoleFonts {
+        get {
+            ConsoleFont[] fonts = new ConsoleFont[GetNumberOfConsoleFonts()];
+            if (fonts.Length > 0)
+                GetConsoleFontInfo(GetStdHandle(StdHandle.OutputHandle), false, (uint)fonts.Length, fonts);
+            return fonts;
+        }
+    }
 
 }
 
