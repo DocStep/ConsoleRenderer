@@ -14,13 +14,41 @@ using System.Threading;
 //#pragma warning disable CS8618
 namespace ConsoleRenderer {
     public static class Renderer { /// <> Uses grey-scale yet
-        
+
+        public static Passer Passer;
+
+        public static Dictionary<int, ConsoleColor> colors = new Dictionary<int, ConsoleColor>() { [0] = ConsoleColor.Black };
+        public static List<int> i_colorsGs = new List<int>();
+        public static string title = "Renderer Engine";
+
+        public static bool isPassing;
+        public static bool needPass = false;
+        public static bool shouldInterrupt = false;
+        public static int height;
+        public static int width;
+        public static int widthSquares;
+        //public static int framesTotal = 0;
+        public static bool forceAscii = false;
+        public static string textAscii = "";
+
+        public static char[,] arrText;
+        public static int[,] arrTextColor;
+        public static int[,] arrCellColor;
+
+        public static char[,] bufferText;
+        public static int[,] bufferTextColor;
+        public static int[,] bufferCellColor;
+
+        public static Pixel[,] cellFrameBuffer;
+        public static Pixel[,] cellFrameBufferGs;
+
+
         public static void Init (int height, int width, Dictionary<int, ConsoleColor> colors = null) {
             Renderer.colors = colors != null ? colors : DefaultValues.Colors2;
 
             Renderer.height = height;
             Renderer.width = width;
-            widthVideo = width/2;
+            widthSquares = width/2;
 
             arrText = new char[height, width];
             arrTextColor = new int[height, width];
@@ -62,37 +90,9 @@ namespace ConsoleRenderer {
             Console.Write(text);
             //Simple.WriteArray(arrText);
             
-            CellsFull();
-            CellsOverwrite();
+            //CellsFull();
+            //CellsOverwrite();
         }
-
-
-
-        public static Dictionary<int, ConsoleColor> colors = new Dictionary<int, ConsoleColor>() { [0] = ConsoleColor.Black };
-        public static List<int> i_colorsGs = new List<int>();
-        public static string title = "Renderer Engine";
-
-        public static bool isPassing;
-        public static bool needPass = false;
-        public static bool shouldInterrupt = false;
-        public static int height;
-        public static int width;
-        public static int widthVideo;
-        //public static int framesTotal = 0;
-        public static bool forceAscii = false;
-        public static string textAscii = "";
-
-        public static char[,] arrText;
-        public static int[,] arrTextColor;
-        public static int[,] arrCellColor;
-
-        public static char[,] bufferText;
-        public static int[,] bufferTextColor;
-        public static int[,] bufferCellColor;
-
-        public static Pixel[,] cellFrameBuffer;
-        public static Pixel[,] cellFrameBufferGs;
-
 
 
         public static void Pass () {
@@ -104,8 +104,9 @@ namespace ConsoleRenderer {
                 Write(textAscii);
             } else {
                 //Simple.WriteArray(arrText);
-                CellsFull();
+                //CellsFull();
                 //CellsOverwrite();
+                Passer.Pass();
             }
 
             RendererDebugger.framesTotal++;
@@ -116,7 +117,7 @@ namespace ConsoleRenderer {
             needPass = false;
             shouldInterrupt = false;
         }
-        static int matrixSize;
+        public static int matrixSize;
         static void ResetLayers () {
             Array.Copy(arrText, bufferText, matrixSize);
             Array.Copy(arrTextColor, bufferTextColor, matrixSize);
@@ -139,7 +140,7 @@ namespace ConsoleRenderer {
 
         static void VideoFramePixels (Pixel[,] frame) {
             for (int top = 0; top < height; top++) {
-                for (int left = 0; left < widthVideo; left++) {
+                for (int left = 0; left < widthSquares; left++) {
                     Pixel pixel = frame[top, left];
                     pixels[top, left] = pixel;
                     pixelsGs[top, left] = ((pixel.R*0.3f) + (pixel.G*0.59f) + (pixel.B*0.11f))/256f;
@@ -153,7 +154,7 @@ namespace ConsoleRenderer {
             VideoFramePixels(frame);
 
             for (int top = 0; top < height; top++) {
-                for (int left = 0; left < widthVideo; left++) {
+                for (int left = 0; left < widthSquares; left++) {
                     int idx = (int)(pixelsGs[top, left]*colors.Count);
                     int i_color = i_colorsGs[idx];
                     arrCellColor[top, 2*left] = i_color;
@@ -191,14 +192,14 @@ namespace ConsoleRenderer {
             float strength = 1f/((2*radius + 1)*(2*radius + 1));
 
             for (int top = 0; top < height; top++) {
-                for (int left = 0; left < widthVideo; left++) {
+                for (int left = 0; left < widthSquares; left++) {
                     float r = 0;
                     float g = 0;
                     float b = 0;
                     for (int topK = -radius; topK <= radius; topK++) {
                         int topS = Math.Clamp(top + topK, 0, height - 1);
                         for (int leftK = -radius; leftK <= radius; leftK++) {
-                            int leftS = Math.Clamp(left + leftK, 0, widthVideo - 1);
+                            int leftS = Math.Clamp(left + leftK, 0, widthSquares - 1);
                             Pixel p = frame[topS, leftS];
                             r += p.R;
                             g += p.G;
@@ -327,110 +328,9 @@ namespace ConsoleRenderer {
 
 
 
-        /// Full Cells Render
-        public static void CellsFull () {
-            CellsFullGroups();
-            WriteChangeSet(groupsToWriteFull);
-        }
-        static List<CellDiffPos> groupsToWriteFull = new List<CellDiffPos>();
-        static void CellsFullGroups () {
-            groupsToWriteFull.Clear();
-            int prevSymbolWritenToGroupIndex = -1;
-            for (int top = 0; top < height; top++) {
-                if (Renderer.shouldInterrupt) {
-                    Renderer.shouldInterrupt = false;
-                    RendererDebugger.framesSkipped++;
-                    matrixSize = top*width;
-                    return;
-                }
-
-                for (int left = 0; left < width; left++) {
-                    // check group by color
-                    bool groupFound = false;
-                    int textColor = arrTextColor[top, left];
-                    int cellColor = arrCellColor[top, left];
-                    for (int iColor = 0; iColor < groupsToWriteFull.Count; iColor++) {
-                        CellDiffPos group = groupsToWriteFull[iColor];
-                        if (textColor == group.colorText && cellColor == group.colorCell) {
-                            groupFound = true;
-                            if (prevSymbolWritenToGroupIndex == iColor) {
-                                groupsToWriteFull[iColor].pos[group.pos.Count-1].text += cellText(top, left);
-                            } else {
-                                groupsToWriteFull[iColor].pos.Add(new Pos(cellText(top, left), top, left));
-                            }
-                            prevSymbolWritenToGroupIndex = iColor;
-                            break;
-                        }
-                    }
-
-                    if (!groupFound) {
-                        prevSymbolWritenToGroupIndex = groupsToWriteFull.Count;
-                        groupsToWriteFull.Add(new(textColor, cellColor, new Pos(cellText(top, left), top, left)));
-                    }
-                }
-            }
-            matrixSize = height*width;
-        }
 
 
-        /// OverWrite Cells Render
-        public static void CellsOverwrite () {
-            CellsOverwriteGroups();
-            WriteChangeSet(groupsToWriteOver);
-        }
-        static List<CellDiffPos> groupsToWriteOver = new List<CellDiffPos>();
-        static void CellsOverwriteGroups () {
-            groupsToWriteOver.Clear();
-            int prevSymbolWritenToGroupIndex = -1;
-            for (int top = 0; top < height; top++) {
-                /// Interrupt Check
-                if (Renderer.shouldInterrupt) {
-                    Renderer.shouldInterrupt = false;
-                    RendererDebugger.framesSkipped++;
-                    return;
-                }
-                for (int left = 0; left < width; left++) {
-                    int textColor = arrTextColor[top, left];
-                    int cellColor = arrCellColor[top, left];
-
-                    if (arrText[top, left] != bufferText[top, left] ||
-                        //(arrText[top, left] == bufferText[top, left] && prevSymbolWritenToGroupIndex >= 0) || 
-                        textColor != bufferTextColor[top, left] ||
-                        cellColor != bufferCellColor[top, left]) {
-                        // check group by colors
-                        bool groupFounded = false;
-                        for (int iColor = 0; iColor < groupsToWriteOver.Count; iColor++) {
-                            CellDiffPos group = groupsToWriteOver[iColor];
-                            if (group.colorText == textColor && group.colorCell == cellColor
-                                ) {
-                                groupFounded = true;
-                                if (prevSymbolWritenToGroupIndex == iColor) {
-                                    groupsToWriteOver[iColor].pos[group.pos.Count-1].text
-                                        += cellText(top, left);
-                                } else {
-                                    groupsToWriteOver[iColor].pos.Add(new Pos(cellText(top, left), top, left));
-                                }
-                                prevSymbolWritenToGroupIndex = iColor;
-                                break;
-                            }
-                        }
-
-                        // create group
-                        if (!groupFounded) {
-                            prevSymbolWritenToGroupIndex = groupsToWriteOver.Count;
-                            groupsToWriteOver.Add(new(textColor, cellColor,
-                                new Pos(cellText(top, left), top, left)));
-                        }
-                    } else {
-                        prevSymbolWritenToGroupIndex = -1;
-                    }
-                }
-            }
-        }
-
-
-
-        static void WriteChangeSet (List<CellDiffPos> groups) {
+        public static void WriteChangeSet (List<CellDiffPos> groups) {
             int groupsCount = groups.Count;
             for (int iColor = 0; iColor < groupsCount; iColor++) {
                 CellDiffPos group = groups[iColor];
@@ -461,11 +361,11 @@ namespace ConsoleRenderer {
                     DrawCellsChange(group.pos[iText]);
             }
         }
-        static void DrawCellsChange (Pos pos) {
+        public static void DrawCellsChange (Pos pos) {
             SetCursor(pos.top, pos.left);
             Write(pos.text);
         }
-        static string cellText (int top, int left) {
+        public static string cellText (int top, int left) {
             return string.Empty + arrText[top, left];
         }
 

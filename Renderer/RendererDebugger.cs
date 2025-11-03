@@ -41,7 +41,7 @@ namespace ConsoleRenderer {
                 renderLatecy = (int)(renderEnd-renderStart)/1000;
                 videoLatency += renderLatecy;
                 //Console.Title = (renderer.title.Length > 0 ? $"{renderer.title} " : "") +
-                Console.Title = $"{state} ({threadsCount}) " +
+                Console.Title = $"{state} ({threadsCount}) {Renderer.Passer.name}" +
                     $"[ fps:{fps,5} / (fF/f):({fixedFramesTotal,5}/{framesTotal,5}) / fQ:{framesQueue,4} " +
                     $"/ fFS:{fixedFramesSkipped,4} / fS:{framesSkipped,4} |" +
                     $"rL/vL:{renderLatecy,4}/{videoLatency/1000,4} | w:{writes,5}; cC:{recolorsCell,5}; cT:{recolorsText,5}; c:{cursorSets,5} ] {text}";

@@ -55,7 +55,7 @@ namespace ConsoleRenderer {
 
     /* Structures */
 
-    struct CellDiffPos {
+    public struct CellDiffPos {
         public CellDiffPos (int colorText, int colorCell, Pos cellPos) {
             this.colorText = colorText;
             this.colorCell = colorCell;

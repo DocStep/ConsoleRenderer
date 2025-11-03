@@ -59,7 +59,11 @@ namespace ConsoleRenderer {
 
         public static void Start () {
             if (SceneManager.Current == null) return;
-            
+
+            if (Renderer.Passer == null) {
+                Renderer.Passer = new PasserColorChangeSets();
+            }
+
             engineWork = true;
             th_Control.Start();
             th_FixedUpdate.Start();
@@ -87,18 +91,17 @@ namespace ConsoleRenderer {
                         Renderer.shouldInterrupt = true;
                     }
 
-                    //Renderer.Pass();
-
-
                     Renderer.needPass = true;
                     //Renderer.shouldInterrupt = Renderer.isPassing;
+
+                    Renderer.Pass();
                 }
             }
         }
         static void Thread_Update () {
             while (engineWork) {
                 if (Renderer.needPass) {
-                    Renderer.Pass();
+                    //Renderer.Pass();
                 }
             }
         }
