@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing;
 
 
 namespace Test;
@@ -11,6 +12,7 @@ namespace Test;
 //#pragma warning disable CA1416
 //#pragma warning disable CS8618
 public class GameTest_AlgBML : Game {
+    //public GameTest_AlgBML (int height, int width, Dictionary<int, ConsoleColor> colors) : 
     public GameTest_AlgBML (int height, int width, Dictionary<int, ConsoleColor> colors) : 
         base(height, width, colors) {
         Engine.fpsMax = 10000;

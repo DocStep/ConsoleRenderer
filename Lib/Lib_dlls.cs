@@ -9,6 +9,36 @@ using System.Drawing;
 namespace ConsoleRenderer;
 
 public static class Lib_dlls {
+    [DllImport("kernel32.dll")]
+    public static extern bool AllocConsole ();
+
+    [DllImport("kernel32.dll")]
+    public static extern IntPtr GetStdHandle (int nStdHandle);
+    [DllImport("kernel32.dll")]
+    public static extern bool GetConsoleMode (IntPtr hConsoleHandle, out uint lpMode);
+    [DllImport("kernel32.dll")]
+    public static extern bool SetConsoleMode (IntPtr hConsoleHandle, uint dwMode);
+    [DllImport("kernel32.dll")]
+    public static extern bool GetConsoleScreenBufferInfo (IntPtr hConsoleOutput, out CONSOLE_SCREEN_BUFFER_INFO lpConsoleScreenBufferInfo);
+
+    public const int STD_OUTPUT_HANDLE = -11;
+    //public const uint ENABLE_WRAP_AT_EOL_OUTPUT = 0x0002;
+    public const uint ENABLE_WRAP_AT_EOL_OUTPUT = 0x0002;
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct COORD { public short X, Y; }
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SMALL_RECT { public short Left, Top, Right, Bottom; }
+    [StructLayout(LayoutKind.Sequential)]
+    public struct CONSOLE_SCREEN_BUFFER_INFO {
+        public COORD Size;
+        public COORD CursorPosition;
+        public short Attributes;
+        public SMALL_RECT Window;
+        public COORD MaximumWindowSize;
+    }
+
+
     [DllImport("kernel32")]
     public static extern bool SetConsoleIcon (IntPtr hIcon);
 

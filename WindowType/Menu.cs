@@ -5,7 +5,7 @@ public class Menu {
         this.name = name;
         this.main = main;
 
-        Renderer.Write(name, 0, 2, 1, 0, false);
+        Renderer.WriteText(name, 0, 2, 1, 0, false);
     }
 
     public class Line {
@@ -40,21 +40,21 @@ public class Menu {
 
     public void Select (int index) {
         index = Math.Clamp(index, 0, lines.Count-1);
-        if (0 <= selected) Renderer.Write(lines[selected].name, selected+2, 0, 1, 0, false);
-        Renderer.Write(lines[index].name, index+2, 0, 0, 1, false);
+        if (0 <= selected) Renderer.WriteText(lines[selected].name, selected+2, 0, 1, 0, false);
+        Renderer.WriteText(lines[index].name, index+2, 0, 0, 1, false);
         selected = index;
     }
 
     public void Write () {
-        Renderer.Write(name, 0, 2, 1, 0, false);
+        Renderer.WriteText(name, 0, 2, 1, 0, false);
         for (int i = 0; i < lines.Count; i++) {
             if (i == selected) {
-                Renderer.Write(lines[i].name, i+2, 0, 0, 1, false);
+                Renderer.WriteText(lines[i].name, i+2, 0, 0, 1, false);
             } else {
-                Renderer.Write(lines[i].name, i+2, 0, 1, 0, false);
+                Renderer.WriteText(lines[i].name, i+2, 0, 1, 0, false);
             }
         }
-        Renderer.Write(back.name, lines.Count+3, 0, 1, 0, false);
+        Renderer.WriteText(back.name, lines.Count+3, 0, 1, 0, false);
     }
 
 }

@@ -4,6 +4,7 @@ public class DefaultValues {
 
     public static int width = 60;
     public static int height = 30;
+
     public static Dictionary<int, ConsoleColor> Colors2 = new Dictionary<int, ConsoleColor>() {
                 { 0, ConsoleColor.Black },
                 { 1, ConsoleColor.White },
@@ -20,10 +21,10 @@ public class DefaultValues {
                 { 3, ConsoleColor.White },
             };
 
-    public static ConsoleColor c_Text = ConsoleColor.White;
-    public static ConsoleColor c_Cell = ConsoleColor.Black;
 
-    public static int pixelsToCell = 20;
+    public static ConsoleColor c_Cell = ConsoleColor.Black;
+    public static ConsoleColor c_Text = ConsoleColor.White;
+    public static int pixelsToCell = 16;
 
     public static List<KeyValuePair<char, char>> videoCellPairChars = new List<KeyValuePair<char, char>>() {
         new('[', ']'),

@@ -1,4 +1,7 @@
-﻿namespace ConsoleRenderer;
+﻿using System.Drawing;
+
+
+namespace ConsoleRenderer;
 
 public class Lib {
 
@@ -64,51 +67,6 @@ public class Lib {
                 arr[top, left] = t;
             }
         return arr;
-    }
-
-
-    public static void Fill (ConsoleColor color) {
-        Console.Clear();
-        Console.BackgroundColor = color;
-        for (int y = 0; y < Console.BufferHeight; y++) {
-            Console.SetCursorPosition(0, y);
-            string s = "";
-            for (int x = 0; x < Console.BufferWidth; x++) s += "  ";
-            Console.Write(s);
-        }
-    }
-
-
-    public static void WriteArray (int[,] arr) {
-        Console.Clear();
-        Console.SetCursorPosition(0, 0);
-        Console.ForegroundColor = DefaultValues.c_Text;
-        Console.BackgroundColor = DefaultValues.c_Cell;
-        for (int top = 0; top < arr.GetLength(0); top++) 
-            for (int left = 0; left < arr.GetLength(1); left++) 
-                Console.Write(arr[top, left]);
-    }
-
-    public static void WriteArray (string[,] arr) {
-        Console.Clear();
-        Console.SetCursorPosition(0, 0);
-        Console.ForegroundColor = DefaultValues.c_Text;
-        Console.BackgroundColor = DefaultValues.c_Cell;
-        for (int top = 0; top < arr.GetLength(0); top++) 
-            for (int left = 0; left < arr.GetLength(1); left++) 
-                Console.Write(arr[top, left]);
-    }
-
-    public static void WriteArrayColor (int[,] arr, Dictionary<int, ConsoleColor> colors) {
-        Console.Clear();
-        Console.SetCursorPosition(0, 0);
-        Console.ForegroundColor = DefaultValues.c_Text;
-        Console.BackgroundColor = DefaultValues.c_Cell;
-        for (int top = 0; top < arr.GetLength(0); top++)
-            for (int left = 0; left < arr.GetLength(1); left++) {
-                Console.BackgroundColor = colors.First(x => x.Key == arr[top, left]).Value;
-                Console.Write(" ");
-            }
     }
 
 }

@@ -1,4 +1,8 @@
-﻿namespace ConsoleRenderer;
+﻿using System.Drawing;
+//using Console = Colorful.Console;
+
+
+namespace ConsoleRenderer;
 
 //#pragma warning disable CA1416
 //#pragma warning disable CS8618
@@ -7,6 +11,7 @@ public static class Renderer { /// <> Uses grey-scale yet
     public static Passer Passer;
 
     public static Dictionary<int, ConsoleColor> colors = new Dictionary<int, ConsoleColor>() { [0] = ConsoleColor.Black };
+    //public static Dictionary<int, Color> colors = new Dictionary<int, Color>() { [0] = Color.Black };
     public static List<int> i_colorsGs = new List<int>();
     public static string title = "Renderer Engine";
 
@@ -15,21 +20,30 @@ public static class Renderer { /// <> Uses grey-scale yet
     public static bool shouldInterrupt = false;
     public static int height;
     public static int width;
+    public static int heightWindow;
+    //public static int widthWindow;
     public static int widthSquares;
     //public static int framesTotal = 0;
     public static bool forceAscii = false;
     public static string textAscii = "";
+    public static int cellsToChangeCount;
 
-    public static char[,] arrText;
-    public static int[,] arrTextColor;
     public static int[,] arrCellColor;
+    public static int[,] arrTextColor;
+    public static char[,] arrText;
 
-    public static char[,] bufferText;
-    public static int[,] bufferTextColor;
     public static int[,] bufferCellColor;
+    public static int[,] bufferTextColor;
+    public static char[,] bufferText;
 
     public static Pixel[,] cellFrameBuffer;
     public static Pixel[,] cellFrameBufferGs;
+
+    /// Layout
+    public static bool lineWrapping = true;
+    public static int expandBottom = 5;
+    public static int expandRight = 10;
+
 
 
     public static void Init (int height, int width, Dictionary<int, ConsoleColor> colors = null) {
@@ -57,45 +71,52 @@ public static class Renderer { /// <> Uses grey-scale yet
 
         i_colorsGs = colors.Keys.ToList();
 
-        InitCanvas(height, width);
-        EmptyCanvas(height, width);
+        //RendererSimple.Wrapping(false);
+
+        if (lineWrapping) RendererSimple.WindowInit(height + expandBottom, width + expandRight);
+        else RendererSimple.WindowInit(height + expandBottom, width);
+
+        RendererSimple.Fill(DefaultValues.c_Cell);
+
 
         RendererDebugger.state = Engine.state.ToString();
         RendererDebugger.framesQueue = 0;
         //Renderer.RendererDebugger.threadsCount = Process.GetCurrentProcess().Threads.Count - threadsStartCount;
     }
+    public static void Validation () {
+        if (Passer == null) Passer = new PasserColorChangeSets();
 
-    static void InitCanvas (int height, int width) {
-        Console.CursorVisible = false;
-        Console.SetWindowSize(width, height);
-        Console.SetBufferSize(width, height);
-        Console.SetWindowSize(width, height);
+        arrText = new char[height, width];
+        arrTextColor = new int[height, width];
+        arrCellColor = new int[height, width];
+
+        bufferText = new char[height, width];
+        bufferTextColor = new int[height, width];
+        bufferCellColor = new int[height, width];
+        
+        Passer.arrText = new char[height, width];
+        Passer.arrTextColor = new int[height, width];
+        Passer.arrCellColor = new int[height, width];
+
+        Passer.bufferText = new char[height, width];
+        Passer.bufferTextColor = new int[height, width];
+        Passer.bufferCellColor = new int[height, width];
+
     }
-    static void EmptyCanvas (int height, int width) {
-        Console.SetCursorPosition(0, 0);
-        Console.ForegroundColor = DefaultValues.c_Text;
-        Console.BackgroundColor = DefaultValues.c_Cell;
-        string text = new string(' ', height*width);
-        Console.Write(text);
-        //Simple.WriteArray(arrText);
-            
-        //CellsFull();
-        //CellsOverwrite();
-    }
 
 
+
+    static int maxTop = 0;
+    static int maxLeft = 0;
     public static void Pass () {
         isPassing = true;
         RendererDebugger.DebugReset();
 
         if (forceAscii) {
-            SetCursor(0, 0);
-            Write(textAscii);
+            RendererSimple.SetCursor(0, 0);
+            RendererSimple.Write(textAscii);
         } else {
-            //Simple.WriteArray(arrText);
-            //CellsFull();
-            //CellsOverwrite();
-            Passer.Pass();
+            Passer.Pass_internal();
         }
 
         RendererDebugger.framesTotal++;
@@ -106,11 +127,10 @@ public static class Renderer { /// <> Uses grey-scale yet
         needPass = false;
         shouldInterrupt = false;
     }
-    public static int matrixSize;
     static void ResetLayers () {
-        Array.Copy(arrText, bufferText, matrixSize);
-        Array.Copy(arrTextColor, bufferTextColor, matrixSize);
-        Array.Copy(arrCellColor, bufferCellColor, matrixSize);
+        Array.Copy(arrText, bufferText, cellsToChangeCount);
+        Array.Copy(arrTextColor, bufferTextColor, cellsToChangeCount);
+        Array.Copy(arrCellColor, bufferCellColor, cellsToChangeCount);
 
         arrText = Lib.ArrayFill(arrText, ' ');
         int colorDef = i_getColorDef();
@@ -273,8 +293,8 @@ public static class Renderer { /// <> Uses grey-scale yet
 
 
 
-    /* Text To Buffer */
-    public static void Write (string text, int top, int left, int colorText, int colorCell, bool trimEndLine) {
+    /// Text To Buffer
+    public static void WriteText (string text, int top, int left, int colorText, int colorCell, bool trimEndLine = false) {
         if (trimEndLine) text = text.Substring(0, arrCellColor.GetLength(1)-left);
 
         while (0 < text.Length) {
@@ -323,8 +343,8 @@ public static class Renderer { /// <> Uses grey-scale yet
         int groupsCount = groups.Count;
         for (int iColor = 0; iColor < groupsCount; iColor++) {
             CellDiffPos group = groups[iColor];
-            SetColorText(group.colorText);
-            SetColorCell(group.colorCell);
+            RendererSimple.SetColorText(group.colorText);
+            RendererSimple.SetColorCell(group.colorCell);
             int posCount = group.pos.Count;
             for (int iText = 0; iText < posCount; iText++)
                 DrawCellsChange(group.pos[iText]);
@@ -343,77 +363,31 @@ public static class Renderer { /// <> Uses grey-scale yet
             }
 
             CellDiffPos group = groups[iColor];
-            SetColorText(group.colorText);
-            SetColorCell(group.colorCell);
+            RendererSimple.SetColorText(group.colorText);
+            RendererSimple.SetColorCell(group.colorCell);
             int posCount = group.pos.Count;
             for (int iText = 0; iText < posCount; iText++)
                 DrawCellsChange(group.pos[iText]);
         }
     }
     public static void DrawCellsChange (TextPos pos) {
-        SetCursor(pos.top, pos.left);
-        Write(pos.text);
+        RendererSimple.SetCursor(pos.top, pos.left);
+        RendererSimple.Write(pos.text);
     }
     public static string cellText (int top, int left) {
         return string.Empty + arrText[top, left];
     }
 
 
-
-    /* Simple */
-    static int colorCell = 0;
-    static int colorText = 0;
-    static int cursorTop = 0;
-    static int cursorLeft = 0;
-    public static void Write (string s) {
-        Console.Write(s);
-        RendererDebugger.Write();
-    }
-    public static void WriteLine (string s) {
-        Console.WriteLine(s);
-        RendererDebugger.Write();
-    }
-    public static void SetColorCell (ConsoleColor colorCell) {
-        int colorKey = colors.First(x => x.Value == colorCell).Key;
-        if (Renderer.colorCell != colorKey) {
-            Renderer.colorCell = colorKey;
-            Console.BackgroundColor = colorCell;
-            RendererDebugger.SetColorCell();
+    /// Interrupt Check
+    public static bool Interruption (int top) {
+        if (Renderer.shouldInterrupt) {
+            Renderer.shouldInterrupt = false;
+            RendererDebugger.framesSkipped++;
+            Renderer.cellsToChangeCount = top*Renderer.width;
+            return true;
         }
-    }
-    public static void SetColorCell (int colorCell) {
-        if (Renderer.colorCell != colorCell) {
-            Renderer.colorCell = colorCell;
-            Console.BackgroundColor = colors.First(x => x.Key == colorCell).Value;
-            //Console.BackgroundColor = colors[colorCell];
-            RendererDebugger.SetColorCell();
-        }
-    }
-    // add "space" string check
-    public static void SetColorText (ConsoleColor colorText) {
-        int colorKey = colors.First(x => x.Value == colorText).Key;
-        if (Renderer.colorText != colorKey) {
-            Renderer.colorText = colorKey;
-            Console.ForegroundColor = colorText;
-            RendererDebugger.SetColorText();
-        }
-    }
-    public static void SetColorText (int colorText) {
-        if (Renderer.colorText != colorText) {
-            Renderer.colorText = colorText;
-            Console.ForegroundColor = colors.First(x => x.Key == colorText).Value;
-            RendererDebugger.SetColorText();
-        }
-    }
-    public static void SetCursor (int top, int left) {
-        if (top != Console.GetCursorPosition().Top || left != Console.GetCursorPosition().Left) {
-            cursorTop = Console.GetCursorPosition().Top;
-            cursorLeft = Console.GetCursorPosition().Left;
-            //Console.SetWindowSize(width, height);
-            //if (left < Console.WindowWidth && left < Console.WindowHeight) 
-            Console.SetCursorPosition(left, top);
-            RendererDebugger.SetCursor();
-        }
+        return false;
     }
 
 }

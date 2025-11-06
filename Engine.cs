@@ -56,15 +56,12 @@ public static class Engine {
     public static void Start () {
         if (SceneManager.Current == null) return;
 
-        if (Renderer.Passer == null) {
-            Renderer.Passer = new PasserColorChangeSets();
-        }
+        Renderer.Validation();
 
         engineWork = true;
         th_Control.Start();
         th_FixedUpdate.Start();
         th_Update.Start();
-        //Thread_FixedUpdate();
     }
     static void Thread_FixedUpdate () {
         while (engineWork) {
@@ -83,21 +80,17 @@ public static class Engine {
                 RendererDebugger.fixedFramesTotal++;
 
                 Renderer.needPass = true;
-                if (Renderer.isPassing) {
-                    Renderer.shouldInterrupt = true;
-                }
+                //Renderer.shouldInterrupt = Renderer.isPassing;
 
-                Renderer.needPass = true;
-                Renderer.shouldInterrupt = Renderer.isPassing;
-
-                //Renderer.Pass();
+                Renderer.Pass();
             }
         }
     }
+
     static void Thread_Update () {
         while (engineWork) {
             if (Renderer.needPass) {
-                Renderer.Pass();
+                //Renderer.Pass();
             }
         }
     }

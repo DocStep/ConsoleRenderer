@@ -1,6 +1,7 @@
 ﻿using ConsoleRenderer;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 
 
 namespace Test;
@@ -129,7 +130,7 @@ public class MenuCanvas : Scene {
     void ProcessLoadingSymbol () {
         int frameDelta = (int)(Engine.fpsMax/DefaultValues.loading.Length/2);
         if (iter % frameDelta == 0) currloadingChar++;
-        Renderer.Write(DefaultValues.loading[currloadingChar % DefaultValues.loading.Length].ToString(), menuActive.selected+2, 2, 0, 1, false);
+        Renderer.WriteText(DefaultValues.loading[currloadingChar % DefaultValues.loading.Length].ToString(), menuActive.selected+2, 2, 0, 1, false);
     }
 
 }

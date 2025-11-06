@@ -30,6 +30,13 @@ public static class RendererDebugger {
     }
 
     public static void DebugOut () {
+        //maxTop = Math.Max(maxTop, Console.CursorTop);
+        //maxLeft = Math.Max(maxLeft, Console.CursorLeft);
+        //Console.Title = $"{maxTop} {maxLeft}";
+        //Console.Title = $"{Console.CursorTop} {Console.CursorLeft}";
+        //Console.Title = $"Output redirected: {Console.IsOutputRedirected}";
+        //return;
+
         if (debug) {
             GetFPS();
             renderEnd = DateTime.Now.Ticks;

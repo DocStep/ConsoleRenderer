@@ -7,46 +7,41 @@ public class PasserColorChangeSets : Passer {
     }
 
     public override void Pass () {
-        CellsOverwriteGroups();
-        Renderer.WriteChangeSet(groupsToWriteOver);
+        Convert();
+        Renderer.WriteChangeSet(groups);
     }
 
-    static List<CellDiffPos> groupsToWriteOver = new List<CellDiffPos>();
 
+    List<CellDiffPos> groups = new List<CellDiffPos>();
 
-    static void CellsOverwriteGroups () {
-        groupsToWriteOver.Clear();
+    void Convert () {
+        groups.Clear();
         int prevSymbolWritenToGroupIndex = -1;
         for (int top = 0; top < Renderer.height; top++) {
-            /// Interrupt Check
-            if (Renderer.shouldInterrupt) {
-                Renderer.shouldInterrupt = false;
-                RendererDebugger.framesSkipped++;
-                return;
-            }
+            if (Renderer.Interruption(top)) return;
 
             for (int left = 0; left < Renderer.width; left++) {
-                int textColor = Renderer.arrTextColor[top, left];
-                int cellColor = Renderer.arrCellColor[top, left];
+                int textColor = arrTextColor[top, left];
+                int cellColor = arrCellColor[top, left];
 
-                if (Renderer.arrText[top, left] != Renderer.bufferText[top, left] ||
+                if (arrText[top, left] != bufferText[top, left] ||
                     //(arrText[top, left] == bufferText[top, left] && prevSymbolWritenToGroupIndex >= 0) || 
-                    textColor != Renderer.bufferTextColor[top, left] ||
-                    cellColor != Renderer.bufferCellColor[top, left]) {
+                    textColor != bufferTextColor[top, left] ||
+                    cellColor != bufferCellColor[top, left]) {
                     /// Check group by colors
                     bool groupFounded = false;
-                    for (int iColor = 0; iColor < groupsToWriteOver.Count; iColor++) {
-                        CellDiffPos group = groupsToWriteOver[iColor];
+                    for (int iColor = 0; iColor < groups.Count; iColor++) {
+                        CellDiffPos group = groups[iColor];
                         if (group.colorText == textColor && group.colorCell == cellColor
                             ) {
                             groupFounded = true;
                             if (prevSymbolWritenToGroupIndex == iColor) {
                                 /// Continue text
-                                groupsToWriteOver[iColor].pos[group.pos.Count-1].text
+                                groups[iColor].pos[group.pos.Count-1].text
                                     += Renderer.cellText(top, left);
                             } else {
                                 /// Add new Pos
-                                groupsToWriteOver[iColor].pos.Add(new TextPos(Renderer.cellText(top, left), top, left));
+                                groups[iColor].pos.Add(new TextPos(Renderer.cellText(top, left), top, left));
                             }
                             prevSymbolWritenToGroupIndex = iColor;
                             break;
@@ -55,8 +50,8 @@ public class PasserColorChangeSets : Passer {
 
                     /// Create group
                     if (!groupFounded) {
-                        prevSymbolWritenToGroupIndex = groupsToWriteOver.Count;
-                        groupsToWriteOver.Add(new(textColor, cellColor,
+                        prevSymbolWritenToGroupIndex = groups.Count;
+                        groups.Add(new(textColor, cellColor,
                             new TextPos(Renderer.cellText(top, left), top, left)));
                     }
                 } else {
@@ -65,4 +60,5 @@ public class PasserColorChangeSets : Passer {
             }
         }
     }
+
 }

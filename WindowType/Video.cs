@@ -9,11 +9,13 @@ using SixLabors.ImageSharp.PixelFormats;
 namespace ConsoleRenderer;
 
 public class Video : Scene {
+    //public Video (string path, int pixelsPerCell, Dictionary<int, ConsoleColor> colors, bool useAscii) {
     public Video (string path, int pixelsPerCell, Dictionary<int, ConsoleColor> colors, bool useAscii) {
+        if (!File.Exists(path)) Environment.Exit((int)Errors.VideoNoFile);
+
         Engine.state = EngineStates.Video;
 
         FFmpegLoader.FFmpegPath = @"D:\ffmpeg\bin";
-
         file = MediaFile.Open(path);
         videoHeightRaw = file.Video.Info.FrameSize.Height;
         videoWidthRaw = file.Video.Info.FrameSize.Width;

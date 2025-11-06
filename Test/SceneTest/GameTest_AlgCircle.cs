@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing;
 
 
 namespace Test;
@@ -11,6 +12,7 @@ namespace Test;
 //#pragma warning disable CA1416
 //#pragma warning disable CS8618
 public class GameTest_AlgCircle : Game {
+    //public GameTest_AlgCircle (int height, int width, Dictionary<int, ConsoleColor> colors) : 
     public GameTest_AlgCircle (int height, int width, Dictionary<int, ConsoleColor> colors) : 
         base(height, width, colors) {
         this.height = height;
