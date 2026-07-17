@@ -33,7 +33,8 @@ public static class Renderer { /// <> Uses grey-scale yet
 
 
     public static void Init (int height, int width, Dictionary<int, ConsoleColor> colors = null) {
-        Renderer.colors = colors != null ? colors : DefaultValues.Colors2;
+        if (colors is null) colors = DefaultValues.Colors2;
+        Renderer.colors = colors;
 
         Renderer.height = height;
         Renderer.width = width;
